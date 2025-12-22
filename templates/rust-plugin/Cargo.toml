@@ -1,0 +1,15 @@
+[package]
+name = "my-volt-plugin"
+version = "0.1.0"
+edition = "2021"
+authors = ["Your Name <you@example.com>"]
+description = "My awesome Volt plugin"
+license = "MIT"
+
+[dependencies]
+volt-plugin-api = "0.1"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[lib]
+crate-type = ["cdylib", "rlib"]

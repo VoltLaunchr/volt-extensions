@@ -1,0 +1,16 @@
+[package]
+name = "volt-plugin-api"
+version = "0.1.0"
+edition = "2021"
+authors = ["VoltLaunchr"]
+description = "Plugin API for Volt launcher extensions"
+license = "MIT"
+repository = "https://github.com/VoltLaunchr/volt-extensions"
+keywords = ["volt", "launcher", "plugin", "extension"]
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
