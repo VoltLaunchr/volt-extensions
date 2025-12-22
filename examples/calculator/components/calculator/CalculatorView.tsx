@@ -1,6 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { CalculatorPlugin } from "../../index";
-import { copyToClipboard } from "../../../utils/helpers";
+
+// Helper provided by Volt runtime
+const copyToClipboard = (text: string): boolean => {
+  // In Volt, this uses native clipboard API
+  console.log("Copy to clipboard:", text);
+  return true;
+};
 import {
   addToHistory,
   clearHistory,

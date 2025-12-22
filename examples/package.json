@@ -1,0 +1,16 @@
+{
+  "name": "volt-extensions-examples",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Example plugins for Volt launcher",
+  "scripts": {
+    "install-deps": "npm install"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.2.0",
+    "date-fns": "^3.0.0",
+    "react": "^18.2.0",
+    "typescript": "^5.3.3"
+  }
+}
