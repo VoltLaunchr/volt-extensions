@@ -1,12 +1,12 @@
 {
-  "version": "1.0.0",
-  "lastUpdated": "2024-12-26T12:00:00Z",
+  "version": "1.0.1",
+  "lastUpdated": "2024-12-26T09:30:00Z",
   "extensions": [
     {
       "manifest": {
         "id": "password-generator",
         "name": "Password Generator",
-        "version": "1.0.1",
+        "version": "1.0.4",
         "description": "Generate cryptographically secure passwords using NIST standards and EFF Diceware wordlists",
         "author": {
           "name": "VoltLaunchr Community",
@@ -19,13 +19,13 @@
         "minVoltVersion": "0.4.0",
         "permissions": ["clipboard"]
       },
-      "downloadUrl": "https://github.com/VoltLaunchr/volt-extensions/releases/download/password-generator-v1.0.1/password-generator-v1.0.0.zip",
+      "downloadUrl": "https://github.com/VoltLaunchr/volt-extensions/releases/download/password-generator-v1.0.4/password-generator-v1.0.4.zip",
       "downloads": 0,
       "stars": 0,
       "verified": true,
       "featured": true,
       "createdAt": "2024-12-26T12:00:00Z",
-      "updatedAt": "2024-12-26T12:00:00Z"
+      "updatedAt": "2024-12-26T09:30:00Z"
     }
   ]
 }
