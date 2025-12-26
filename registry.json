@@ -3,25 +3,29 @@
   "lastUpdated": "2024-12-26T12:00:00Z",
   "extensions": [
     {
-      "id": "password-generator",
-      "name": "Password Generator",
-      "description": "Generate cryptographically secure passwords using NIST standards and EFF Diceware wordlists",
-      "version": "1.0.0",
-      "author": "VoltLaunchr Community",
-      "keywords": ["password", "security", "generator", "crypto", "diceware"],
-      "path": "examples/password-generator",
-      "entrypoint": "index.ts",
-      "commands": [
-        "pass",
-        "pass [length]",
-        "pass strong",
-        "pass simple",
-        "pass phrase",
-        "pass phrase [words]",
-        "pass pin",
-        "pass pin [length]"
-      ],
-      "downloadUrl": "https://github.com/VoltLaunchr/volt-extensions/releases/download/password-generator-v1.0.1/password-generator-v1.0.1.zip"
+      "manifest": {
+        "id": "password-generator",
+        "name": "Password Generator",
+        "version": "1.0.1",
+        "description": "Generate cryptographically secure passwords using NIST standards and EFF Diceware wordlists",
+        "author": {
+          "name": "VoltLaunchr Community",
+          "github": "VoltLaunchr"
+        },
+        "keywords": ["password", "security", "generator", "crypto", "diceware"],
+        "category": "utilities",
+        "repository": "https://github.com/VoltLaunchr/volt-extensions",
+        "license": "MIT",
+        "minVoltVersion": "0.4.0",
+        "permissions": ["clipboard"]
+      },
+      "downloadUrl": "https://github.com/VoltLaunchr/volt-extensions/releases/download/password-generator-v1.0.1/password-generator-v1.0.1.zip",
+      "downloads": 0,
+      "stars": 0,
+      "verified": true,
+      "featured": true,
+      "createdAt": "2024-12-26T12:00:00Z",
+      "updatedAt": "2024-12-26T12:00:00Z"
     }
   ]
 }
