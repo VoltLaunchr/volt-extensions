@@ -1,5 +1,26 @@
 {
   "version": "1.0.0",
   "lastUpdated": "2024-12-26T00:00:00Z",
-  "extensions": []
+  "extensions": [
+    {
+      "id": "password-generator",
+      "name": "Password Generator",
+      "description": "Generate cryptographically secure passwords using NIST standards and EFF Diceware wordlists",
+      "version": "1.0.0",
+      "author": "VoltLaunchr Community",
+      "keywords": ["password", "security", "generator", "crypto", "diceware"],
+      "path": "examples/password-generator",
+      "entrypoint": "index.ts",
+      "commands": [
+        "pass",
+        "pass [length]",
+        "pass strong",
+        "pass simple",
+        "pass phrase",
+        "pass phrase [words]",
+        "pass pin",
+        "pass pin [length]"
+      ]
+    }
+  ]
 }

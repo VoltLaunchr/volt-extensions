@@ -12,6 +12,7 @@ export enum PluginResultType {
   Clipboard = 'clipboard',
   Emoji = 'emoji',
   Info = 'info',
+  Password = 'password',
 }
 
 export interface PluginResult {
