@@ -19,7 +19,7 @@
         "minVoltVersion": "0.4.0",
         "permissions": ["clipboard"]
       },
-      "downloadUrl": "https://github.com/VoltLaunchr/volt-extensions/releases/download/password-generator-v1.0.1/password-generator-v1.0.1.zip",
+      "downloadUrl": "https://github.com/VoltLaunchr/volt-extensions/releases/download/password-generator-v1.0.1/password-generator-v1.0.0.zip",
       "downloads": 0,
       "stars": 0,
       "verified": true,
@@ -29,3 +29,4 @@
     }
   ]
 }
+
