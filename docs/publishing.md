@@ -64,6 +64,51 @@ Then create a Pull Request on GitHub.
 - Use excessive resources
 - Violate third-party ToS
 
+## Creating a Release
+
+Once your extension is ready, you need to create a GitHub release with the packaged extension:
+
+### 1. Package your extension
+
+Create a `.zip` file containing your extension files (manifest.json, plugin files, assets, etc.).
+
+### 2. Create a GitHub release
+
+- Go to your repository's **Releases** page
+- Click **"Create a new release"**
+- Create a tag following the format: `{extension-id}-v{version}` (e.g., `password-generator-v1.0.0`)
+- Upload your `.zip` file as a release asset
+
+### 3. Update registry.json
+
+Add your extension to `registry.json` with the correct `downloadUrl` pointing to your release:
+
+```json
+{
+  "manifest": {
+    "id": "your-extension-id",
+    "name": "Your Extension",
+    "version": "1.0.0",
+    ...
+  },
+  "downloadUrl": "https://github.com/{owner}/{repo}/releases/download/{tag}/{filename}.zip"
+}
+```
+
+**URL Format:**
+
+```text
+https://github.com/{owner}/{repo}/releases/download/{extension-id}-v{version}/{extension-id}-v{version}.zip
+```
+
+**Example:**
+
+```text
+https://github.com/VoltLaunchr/volt-extensions/releases/download/password-generator-v1.0.0/password-generator-v1.0.0.zip
+```
+
+> **Important:** The `downloadUrl` must point to a valid GitHub release asset. Volt uses this URL to download and install extensions.
+
 ## Review Process
 
 1. Automated checks run
