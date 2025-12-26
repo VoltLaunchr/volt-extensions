@@ -1,0 +1,27 @@
+{
+  "id": "password-generator",
+  "name": "Password Generator",
+  "version": "1.0.0",
+  "description": "Generate cryptographically secure passwords using NIST standards and EFF Diceware wordlists",
+  "main": "index.ts",
+  "author": {
+    "name": "VoltLaunchr Community",
+    "github": "VoltLaunchr"
+  },
+  "icon": "assets/icon.png",
+  "keywords": ["password", "security", "generator", "crypto", "diceware"],
+  "category": "utilities",
+  "repository": "https://github.com/VoltLaunchr/volt-extensions",
+  "homepage": "https://github.com/VoltLaunchr/volt-extensions/tree/main/examples/password-generator",
+  "license": "MIT",
+  "minVoltVersion": "0.4.0",
+  "permissions": ["clipboard"],
+  "files": [
+    "index.ts",
+    "types.ts",
+    "components/",
+    "parsers/",
+    "utils/",
+    "eff_large_wordlist.txt"
+  ]
+}
