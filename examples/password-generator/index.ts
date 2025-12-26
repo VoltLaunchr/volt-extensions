@@ -14,19 +14,10 @@ import {
   PluginResult,
   PluginResultType,
 } from '../../api/typescript/src/types';
-import { isPasswordQuery, parsePasswordQuery, describeQuery } from './parsers/queryParser';
+import { isPasswordQuery, parsePasswordQuery } from './parsers/queryParser';
 import { generate } from './utils/generator';
 import { formatEntropy, estimateCrackTime, calculateStrength } from './utils/strength';
 import { GeneratedPassword } from './types';
-
-// Export the view component
-export { PasswordView } from './components/PasswordView';
-
-// Helper provided by Volt runtime
-const copyToClipboard = (text: string): boolean => {
-  console.log('Copy to clipboard:', text);
-  return true;
-};
 
 export class PasswordGeneratorPlugin implements Plugin {
   id = 'password-generator';
@@ -73,9 +64,13 @@ export class PasswordGeneratorPlugin implements Plugin {
     const password = result.data?.password as string;
 
     if (password) {
-      const success = await copyToClipboard(password);
-      if (success) {
-        console.log('Password copied to clipboard');
+      // Use VoltAPI provided by the runtime
+      const copyToClipboard = (window as any).VoltAPI?.utils?.copyToClipboard;
+      if (copyToClipboard) {
+        const success = await copyToClipboard(password);
+        if (success) {
+          console.log('Password copied to clipboard');
+        }
       }
     }
   }
