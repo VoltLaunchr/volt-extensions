@@ -1,7 +1,7 @@
 {
   "id": "password-generator",
   "name": "Password Generator",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "Generate cryptographically secure passwords using NIST standards and EFF Diceware wordlists",
   "main": "index.ts",
   "author": {
