@@ -1,0 +1,34 @@
+name: Feature Request
+description: Suggest a new extension or feature for an existing one
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: dropdown
+    id: type
+    attributes:
+      label: Request Type
+      options:
+        - New extension idea
+        - Enhancement to existing extension
+        - Plugin API improvement
+    validations:
+      required: true
+  - type: input
+    id: extension
+    attributes:
+      label: Extension Name (if applicable)
+      placeholder: e.g. password-generator, or N/A for new extensions
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the feature or extension you'd like
+    validations:
+      required: true
+  - type: textarea
+    id: usecase
+    attributes:
+      label: Use Case
+      description: Why would this be useful?
+    validations:
+      required: true

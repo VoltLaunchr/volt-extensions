@@ -1,0 +1,54 @@
+name: Bug Report
+description: Report a bug in a Volt extension
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: input
+    id: extension
+    attributes:
+      label: Extension Name
+      description: Which extension is affected?
+      placeholder: e.g. password-generator
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Extension Version
+      placeholder: e.g. 1.0.4
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear description of the bug
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: input
+    id: volt-version
+    attributes:
+      label: Volt Version
+      placeholder: e.g. v0.0.4
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+        - Windows
+        - macOS
+        - Linux
+    validations:
+      required: true

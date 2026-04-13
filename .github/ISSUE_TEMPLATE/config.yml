@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Volt Discussions
+    url: https://github.com/VoltLaunchr/Volt/discussions
+    about: Ask questions and discuss Volt features
+  - name: Extension Development Guide
+    url: https://github.com/VoltLaunchr/volt-extensions/blob/main/docs/
+    about: Learn how to build Volt extensions
