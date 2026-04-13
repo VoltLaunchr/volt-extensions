@@ -1,0 +1,23 @@
+{
+  "id": "calculator",
+  "name": "Calculator",
+  "version": "1.0.0",
+  "description": "Math expressions, unit conversions, date calculations, and timezone conversions",
+  "author": {
+    "name": "VoltLaunchr Community",
+    "github": "VoltLaunchr"
+  },
+  "main": "index.ts",
+  "category": "utilities",
+  "keywords": ["calc", "=", "math", "calculer", "calculatrice"],
+  "minVoltVersion": "0.4.0",
+  "permissions": ["clipboard"],
+  "files": [
+    "index.ts",
+    "types.ts",
+    "parsers/",
+    "converters/",
+    "utils/",
+    "components/"
+  ]
+}

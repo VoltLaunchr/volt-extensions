@@ -2,6 +2,17 @@
 
 Guide for building Rust backend plugins for Volt.
 
+> **Note**: Most extensions should use the [TypeScript API](typescript-api.md) for simplicity. The Rust API is for system-level operations that need native OS access, high performance, or direct hardware interaction.
+
+## Overview
+
+The Rust plugin API provides two main components:
+
+- **`VoltPluginAPI`** - The API surface exposed to plugins (file paths, state, caching)
+- **`PluginRegistry`** - Thread-safe registry for managing backend plugins (`Arc<RwLock<HashMap>>`)
+
+Source code: [`api/rust/src/`](../api/rust/src/)
+
 ## Installation
 
 Add to your `Cargo.toml`:
@@ -13,100 +24,84 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 ```
 
-## Basic Plugin
+## VoltPluginAPI
+
+The `VoltPluginAPI` struct provides plugins with controlled access to Volt's filesystem:
 
 ```rust
-use volt_plugin_api::{VoltPluginAPI, PluginRegistry};
-use serde::{Serialize, Deserialize};
+use volt_plugin_api::VoltPluginAPI;
 
-#[derive(Serialize, Deserialize)]
-pub struct MyPlugin {
-    id: String,
-    name: String,
-    enabled: bool,
-}
+// Created by Volt core with the app data directory
+let api = VoltPluginAPI::new(app_data_dir);
 
-impl VoltPluginAPI for MyPlugin {
-    fn can_handle(&self, query: &str) -> bool {
-        !query.is_empty()
-    }
+// Plugin-scoped filesystem paths
+let data   = api.get_plugin_data_dir("my-plugin")?;    // app_data/data/my-plugin/
+let cache  = api.get_plugin_cache_dir("my-plugin")?;   // app_data/cache/my-plugin/
+let config = api.get_plugin_config_dir("my-plugin")?;  // app_data/config/my-plugin/
 
-    fn match_query(&self, query: &str) -> Vec<PluginResult> {
-        vec![
-            PluginResult {
-                id: "result-1".to_string(),
-                title: "My Result".to_string(),
-                subtitle: Some(query.to_string()),
-                score: 100,
-                ..Default::default()
-            }
-        ]
-    }
+// Configuration persistence (JSON)
+api.save_config("my-plugin", "settings", &serde_json::json!({"key": "value"}))?;
+let config = api.load_config("my-plugin", "settings")?;  // -> serde_json::Value
 
-    fn execute(&self, result: &PluginResult) {
-        println!("Executed: {}", result.title);
-    }
-}
+// Caching (binary)
+api.write_cache("my-plugin", "data.bin", &bytes)?;
+let data = api.read_cache("my-plugin", "data.bin")?;     // -> Vec<u8>
+api.clear_cache("my-plugin")?;
+
+// Logging
+api.log("my-plugin", LogLevel::Info, "Plugin initialized");
+
+// App info
+let version = api.get_volt_version();          // -> &str
+let app_dir = api.get_app_data_dir()?;         // -> PathBuf
 ```
 
-## Advanced Features
+Plugin IDs are validated to prevent path traversal attacks:
+- Max 64 characters
+- Only ASCII alphanumerics, hyphens, and underscores
+- No path separators (`.`, `..`, `/`, `\`)
 
-### State Management
+## PluginRegistry
 
-```rust
-pub struct StatefulPlugin {
-    cache: HashMap<String, Vec<PluginResult>>,
-}
-
-impl StatefulPlugin {
-    pub fn new() -> Self {
-        Self {
-            cache: HashMap::new(),
-        }
-    }
-}
-
-impl VoltPluginAPI for StatefulPlugin {
-    fn match_query(&mut self, query: &str) -> Vec<PluginResult> {
-        if let Some(cached) = self.cache.get(query) {
-            return cached.clone();
-        }
-
-        let results = self.fetch_results(query);
-        self.cache.insert(query.to_string(), results.clone());
-        results
-    }
-}
-```
-
-### Async Operations
+Thread-safe registry for managing backend plugins (`Arc<RwLock<HashMap>>`):
 
 ```rust
-use tokio::runtime::Runtime;
+use volt_plugin_api::PluginRegistry;
 
-impl VoltPluginAPI for AsyncPlugin {
-    fn match_query(&self, query: &str) -> Vec<PluginResult> {
-        let rt = Runtime::new().unwrap();
-        rt.block_on(async {
-            self.async_fetch(query).await
-        })
-    }
-}
+let registry = PluginRegistry::new();
+
+// Register a plugin (takes Box<dyn Plugin + Send + Sync>)
+registry.register(Box::new(my_plugin))?;
+
+// Check and list plugins
+registry.has_plugin("my-plugin");       // -> bool
+registry.list_plugins()?;               // -> Vec<String>
+registry.count()?;                      // -> usize
+registry.enabled_count()?;              // -> usize
+
+// Manage plugins
+registry.unregister("my-plugin")?;
+
+// Lifecycle
+registry.initialize_all().await?;
+registry.shutdown_all().await?;
 ```
 
 ## When to Use Rust
 
-Use Rust plugins for:
-
-- System-level operations
-- High-performance requirements
-- Native OS integrations
-- CPU-intensive tasks
-
-Most plugins should use TypeScript for simplicity.
+| Use Case | Recommended API |
+|----------|----------------|
+| UI interactions, search results | TypeScript |
+| Web API calls | TypeScript |
+| Clipboard, URL opening | TypeScript (via VoltAPI runtime) |
+| System metrics (CPU, RAM, disk) | Rust |
+| Native OS integrations (registry, processes) | Rust |
+| File system watching | Rust |
+| CPU-intensive computation | Rust |
+| Hardware access | Rust |
 
 ## See Also
 
-- [Plugin API Reference](plugin-api.md)
-- [TypeScript API](typescript-api.md)
-- [Examples](../examples/)
+- [Plugin API Reference](plugin-api.md) - Full interface documentation
+- [TypeScript API](typescript-api.md) - Frontend plugin development
+- [Examples](../examples/) - Working plugins

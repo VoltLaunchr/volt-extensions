@@ -13,6 +13,7 @@
           "github": "VoltLaunchr"
         },
         "keywords": ["password", "security", "generator", "crypto", "diceware"],
+        "prefix": "pass",
         "category": "utilities",
         "repository": "https://github.com/VoltLaunchr/volt-extensions",
         "license": "MIT",

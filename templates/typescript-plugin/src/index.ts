@@ -38,3 +38,5 @@ export class MyPlugin implements Plugin {
     console.log("Plugin executed:", result);
   }
 }
+
+export default MyPlugin;

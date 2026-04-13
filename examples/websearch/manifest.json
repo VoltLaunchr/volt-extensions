@@ -1,0 +1,19 @@
+{
+  "id": "websearch",
+  "name": "Web Search",
+  "version": "1.0.0",
+  "description": "Search Google, Bing, or DuckDuckGo directly from Volt",
+  "author": {
+    "name": "VoltLaunchr Community",
+    "github": "VoltLaunchr"
+  },
+  "main": "index.ts",
+  "category": "utilities",
+  "keywords": ["?", "web", "search", "google", "bing", "ddg"],
+  "prefix": "?",
+  "minVoltVersion": "0.4.0",
+  "permissions": [],
+  "files": [
+    "index.ts"
+  ]
+}

@@ -19,13 +19,17 @@ if (!extensionName) {
   process.exit(1);
 }
 
-const extensionDir = path.join(__dirname, '..', 'examples', extensionName);
+// Look in examples/ first, then community/
+let extensionDir = path.join(__dirname, '..', 'examples', extensionName);
+if (!fs.existsSync(extensionDir)) {
+  extensionDir = path.join(__dirname, '..', 'community', extensionName);
+}
 const distDir = path.join(__dirname, '..', 'dist');
 const manifestPath = path.join(extensionDir, 'manifest.json');
 
 // Check if extension exists
 if (!fs.existsSync(extensionDir)) {
-  console.error(`Extension folder not found: ${extensionDir}`);
+  console.error(`Extension folder not found in examples/ or community/: ${extensionName}`);
   process.exit(1);
 }
 

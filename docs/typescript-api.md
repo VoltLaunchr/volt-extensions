@@ -20,7 +20,25 @@ npm install @volt/plugin-api
 npm install -D typescript @types/node
 ```
 
-### 2. Configure TypeScript
+### 2. Create manifest.json
+
+```json
+{
+  "id": "my-plugin",
+  "name": "My Plugin",
+  "version": "1.0.0",
+  "description": "Does something useful",
+  "author": {
+    "name": "Your Name",
+    "github": "yourusername"
+  },
+  "main": "index.ts",
+  "category": "utilities",
+  "keywords": ["my", "plugin"]
+}
+```
+
+### 3. Configure TypeScript
 
 Create `tsconfig.json`:
 
@@ -42,7 +60,7 @@ Create `tsconfig.json`:
 }
 ```
 
-### 3. Create your plugin
+### 4. Create your plugin
 
 Create `src/index.ts`:
 
@@ -52,12 +70,12 @@ import {
   PluginContext,
   PluginResult,
   PluginResultType,
-} from "@volt/plugin-api";
+} from '@volt/plugin-api';
 
 export class MyPlugin implements Plugin {
-  id = "my-plugin";
-  name = "My Plugin";
-  description = "Does something useful";
+  id = 'my-plugin';
+  name = 'My Plugin';
+  description = 'Does something useful';
   enabled = true;
 
   canHandle(context: PluginContext): boolean {
@@ -67,9 +85,9 @@ export class MyPlugin implements Plugin {
   async match(context: PluginContext): Promise<PluginResult[]> {
     return [
       {
-        id: "result-1",
+        id: 'result-1',
         type: PluginResultType.Info,
-        title: "My Result",
+        title: 'My Result',
         subtitle: context.query,
         score: 100,
       },
@@ -77,20 +95,22 @@ export class MyPlugin implements Plugin {
   }
 
   async execute(result: PluginResult): Promise<void> {
-    console.log("Executed:", result.title);
+    console.log('Executed:', result.title);
   }
 }
+
+export default MyPlugin;
 ```
 
 ## Advanced Features
 
 ### State Management
 
-Store state between queries:
+Store state between queries using a cache:
 
 ```typescript
 export class StatefulPlugin implements Plugin {
-  private cache = new Map<string, any>();
+  private cache = new Map<string, PluginResult[]>();
 
   async match(context: PluginContext): Promise<PluginResult[]> {
     const cached = this.cache.get(context.query);
@@ -105,7 +125,7 @@ export class StatefulPlugin implements Plugin {
 
 ### Settings Support
 
-Access user settings:
+Access user-configured settings via `context.settings`:
 
 ```typescript
 canHandle(context: PluginContext): boolean {
@@ -114,43 +134,143 @@ canHandle(context: PluginContext): boolean {
 }
 ```
 
-### React Components
+### Data Passing (match -> execute)
 
-For custom UI (advanced):
+Use the `data` field on `PluginResult` to pass arbitrary context from `match()` to `execute()`:
 
 ```typescript
-import React from "react";
+match(context: PluginContext): PluginResult[] {
+  return [{
+    id: 'result-1',
+    type: PluginResultType.Info,
+    title: 'Copy this value',
+    score: 100,
+    data: { value: 'my-computed-value', action: 'copy' },
+  }];
+}
 
-export class CustomUIPlugin implements Plugin {
-  // ... other methods
+async execute(result: PluginResult): Promise<void> {
+  const value = result.data?.value as string;
+  // e.g. copy to clipboard via VoltAPI
+}
+```
 
-  renderDetail(result: PluginResult): React.ReactElement {
-    return <div>Custom UI for {result.title}</div>;
+### React Components
+
+Plugins can export React components for custom UI rendering (see the [Calculator example](../examples/calculator/) for a real implementation):
+
+```tsx
+import React from 'react';
+
+// Export a named view component alongside your plugin
+export const MyPluginView: React.FC<{ result: PluginResult }> = ({ result }) => {
+  return (
+    <div className="my-plugin-view">
+      <h3>{result.title}</h3>
+      <p>{result.subtitle}</p>
+    </div>
+  );
+};
+```
+
+### Volt Runtime API
+
+Extensions can access Volt's runtime utilities through `window.VoltAPI`:
+
+```typescript
+async execute(result: PluginResult): Promise<void> {
+  const password = result.data?.password as string;
+
+  // Clipboard access (requires "clipboard" permission in manifest)
+  const copyToClipboard = (window as any).VoltAPI?.utils?.copyToClipboard;
+  if (copyToClipboard) {
+    await copyToClipboard(password);
   }
 }
+```
+
+### Parser Pattern
+
+For complex plugins, separate query parsing from result generation. This is the pattern used by Calculator and Password Generator:
+
+```typescript
+// parsers/queryParser.ts
+export function detectQueryType(query: string): QueryType | null { ... }
+export function parseQuery(query: string): ParsedQuery | null { ... }
+
+// index.ts
+canHandle(context: PluginContext): boolean {
+  return detectQueryType(context.query.trim()) !== null;
+}
+
+match(context: PluginContext): PluginResult[] | null {
+  const parsed = parseQuery(context.query.trim());
+  if (!parsed) return null;
+  // Route to handler based on parsed.type
+}
+```
+
+## Recommended Project Structure
+
+Simple plugin (single file):
+```
+my-plugin/
+├── manifest.json
+├── index.ts
+└── README.md
+```
+
+Complex plugin (multi-file):
+```
+my-plugin/
+├── manifest.json
+├── index.ts              # Main Plugin class
+├── types.ts              # Type definitions
+├── parsers/
+│   └── queryParser.ts    # Query detection and parsing
+├── utils/
+│   └── ...               # Business logic helpers
+├── components/
+│   └── MyView.tsx        # React UI component
+└── README.md
 ```
 
 ## Testing
 
 ```typescript
-import { MyPlugin } from "./index";
+import { MyPlugin } from './index';
 
-describe("MyPlugin", () => {
+describe('MyPlugin', () => {
   const plugin = new MyPlugin();
 
-  it("should handle queries", () => {
-    expect(plugin.canHandle({ query: "test" })).toBe(true);
+  it('should handle matching queries', () => {
+    expect(plugin.canHandle({ query: 'test' })).toBe(true);
   });
 
-  it("should return results", async () => {
-    const results = await plugin.match({ query: "test" });
-    expect(results.length).toBeGreaterThan(0);
+  it('should not handle empty queries', () => {
+    expect(plugin.canHandle({ query: '' })).toBe(false);
+  });
+
+  it('should return results', async () => {
+    const results = await plugin.match({ query: 'test' });
+    expect(results).not.toBeNull();
+    expect(results!.length).toBeGreaterThan(0);
+  });
+
+  it('should have valid result structure', async () => {
+    const results = await plugin.match({ query: 'test' });
+    const result = results![0];
+    expect(result.id).toBeDefined();
+    expect(result.type).toBeDefined();
+    expect(result.title).toBeDefined();
+    expect(result.score).toBeGreaterThanOrEqual(0);
   });
 });
 ```
 
 ## See Also
 
-- [Plugin API Reference](plugin-api.md)
-- [Examples](../examples/)
-- [Publishing Guide](publishing.md)
+- [Plugin API Reference](plugin-api.md) - Full interface and type documentation
+- [Examples](../examples/) - Working plugins (Calculator, Password Generator, Web Search)
+- [Dev Workflow](dev-workflow.md) - Hot reload and dev extension linking
+- [Publishing Guide](publishing.md) - Share your plugin
