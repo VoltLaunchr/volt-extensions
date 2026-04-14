@@ -1,0 +1,22 @@
+{
+  "name": "volt-plugin-notion",
+  "version": "1.0.0",
+  "description": "Notion search plugin for Volt",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "dev": "tsc --watch"
+  },
+  "keywords": [
+    "volt",
+    "plugin",
+    "notion"
+  ],
+  "author": "VoltLaunchr Community",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "@types/node": "^20.0.0"
+  }
+}

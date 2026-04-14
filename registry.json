@@ -1,6 +1,6 @@
 {
-  "version": "1.0.2",
-  "lastUpdated": "2026-04-14T04:30:00Z",
+  "version": "1.0.3",
+  "lastUpdated": "2026-04-14T04:45:00Z",
   "extensions": [
     {
       "manifest": {
@@ -27,6 +27,32 @@
       "featured": true,
       "createdAt": "2026-04-14T04:00:00Z",
       "updatedAt": "2026-04-14T04:30:00Z"
+    },
+    {
+      "manifest": {
+        "id": "notion",
+        "name": "Notion",
+        "version": "1.0.0",
+        "description": "Search and interact with Notion databases, pages, and content",
+        "author": {
+          "name": "VoltLaunchr Community",
+          "github": "VoltLaunchr"
+        },
+        "keywords": ["notion", "search", "database", "pages", "notes", "tasks"],
+        "prefix": "notion",
+        "category": "productivity",
+        "repository": "https://github.com/VoltLaunchr/volt-extensions",
+        "license": "MIT",
+        "minVoltVersion": "0.4.0",
+        "permissions": ["network"]
+      },
+      "downloadUrl": "https://github.com/VoltLaunchr/volt-extensions/releases/download/notion-v1.0.0/notion-v1.0.0.zip",
+      "downloads": 0,
+      "stars": 0,
+      "verified": true,
+      "featured": true,
+      "createdAt": "2026-04-14T04:20:00Z",
+      "updatedAt": "2026-04-14T04:45:00Z"
     },
     {
       "manifest": {

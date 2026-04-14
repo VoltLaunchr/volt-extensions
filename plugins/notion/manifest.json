@@ -1,0 +1,16 @@
+{
+  "id": "notion",
+  "name": "Notion",
+  "version": "1.0.0",
+  "description": "Search and interact with Notion databases, pages, and content",
+  "author": {
+    "name": "VoltLaunchr Community",
+    "github": "VoltLaunchr"
+  },
+  "main": "src/index.ts",
+  "category": "productivity",
+  "keywords": ["notion", "search", "database", "pages", "notes", "tasks"],
+  "prefix": "notion",
+  "permissions": ["network"],
+  "minVoltVersion": "0.4.0"
+}
