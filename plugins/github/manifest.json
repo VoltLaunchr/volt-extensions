@@ -1,0 +1,16 @@
+{
+  "id": "github",
+  "name": "GitHub",
+  "version": "1.0.0",
+  "description": "Search GitHub repositories, issues, pull requests, and gists",
+  "author": {
+    "name": "VoltLaunchr Community",
+    "github": "VoltLaunchr"
+  },
+  "main": "src/index.ts",
+  "category": "productivity",
+  "keywords": ["github", "search", "repositories", "issues", "pull-requests", "gists"],
+  "prefix": "gh",
+  "permissions": ["network"],
+  "minVoltVersion": "0.4.0"
+}

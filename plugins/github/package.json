@@ -1,0 +1,22 @@
+{
+  "name": "volt-plugin-github",
+  "version": "1.0.0",
+  "description": "GitHub search plugin for Volt",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "dev": "tsc --watch"
+  },
+  "keywords": [
+    "volt",
+    "plugin",
+    "github"
+  ],
+  "author": "VoltLaunchr Community",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "@types/node": "^20.0.0"
+  }
+}
