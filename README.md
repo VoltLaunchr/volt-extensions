@@ -13,11 +13,11 @@ Build your own plugins using our TypeScript or Rust API:
 ### TypeScript (Frontend Plugins)
 
 ```bash
-npm install @volt/plugin-api
+npm install @voltlaunchrr/plugin-api
 ```
 
 ```typescript
-import { Plugin, PluginContext, PluginResult, PluginResultType } from '@volt/plugin-api';
+import { Plugin, PluginContext, PluginResult, PluginResultType } from '@voltlaunchrr/plugin-api';
 
 export class MyPlugin implements Plugin {
   id = 'my-plugin';
@@ -106,7 +106,7 @@ Currently available:
 The `volt-plugin` CLI streamlines extension development:
 
 ```bash
-npm install -g @volt/plugin-cli
+npm install -g @voltlaunchrr/plugin-cli
 
 volt-plugin init my-extension    # Scaffold a new extension
 volt-plugin test                 # Validate manifest, interface, and types

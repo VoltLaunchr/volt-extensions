@@ -1,4 +1,4 @@
-import { Plugin, PluginRegistry as IPluginRegistry, PluginContext, PluginResult } from '../types';
+import { Plugin, IPluginRegistry, PluginContext, PluginResult } from './types';
 
 export class PluginRegistry implements IPluginRegistry {
   plugins: Map<string, Plugin>;

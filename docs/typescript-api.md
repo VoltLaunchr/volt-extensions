@@ -5,7 +5,7 @@ Detailed guide for building TypeScript plugins for Volt.
 ## Installation
 
 ```bash
-npm install @volt/plugin-api
+npm install @voltlaunchrr/plugin-api
 ```
 
 ## Project Setup
@@ -16,7 +16,7 @@ npm install @volt/plugin-api
 mkdir my-volt-plugin
 cd my-volt-plugin
 npm init -y
-npm install @volt/plugin-api
+npm install @voltlaunchrr/plugin-api
 npm install -D typescript @types/node
 ```
 
@@ -70,7 +70,7 @@ import {
   PluginContext,
   PluginResult,
   PluginResultType,
-} from '@volt/plugin-api';
+} from '@voltlaunchrr/plugin-api';
 
 export class MyPlugin implements Plugin {
   id = 'my-plugin';

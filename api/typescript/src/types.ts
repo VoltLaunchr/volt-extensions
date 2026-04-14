@@ -56,7 +56,7 @@ export interface Plugin {
   execute(result: PluginResult): Promise<void> | void;
 }
 
-export interface PluginRegistry {
+export interface IPluginRegistry {
   plugins: Map<string, Plugin>;
   register(plugin: Plugin): void;
   unregister(pluginId: string): void;

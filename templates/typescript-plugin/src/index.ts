@@ -3,7 +3,7 @@ import {
   PluginContext,
   PluginResult,
   PluginResultType,
-} from "@volt/plugin-api";
+} from "@voltlaunchrr/plugin-api";
 
 export class MyPlugin implements Plugin {
   id = "my-plugin";

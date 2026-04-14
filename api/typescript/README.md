@@ -1,17 +1,17 @@
-# @volt/plugin-api
+# @voltlaunchrr/plugin-api
 
 TypeScript API for building Volt launcher plugins.
 
 ## Installation
 
 ```bash
-npm install @volt/plugin-api
+npm install @voltlaunchrr/plugin-api
 ```
 
 ## Quick Start
 
 ```typescript
-import { Plugin, PluginContext, PluginResult, PluginResultType } from '@volt/plugin-api';
+import { Plugin, PluginContext, PluginResult, PluginResultType } from '@voltlaunchrr/plugin-api';
 
 export class MyPlugin implements Plugin {
   id = 'my-plugin';

@@ -40,7 +40,7 @@ my-extension/
 ### 4. Create index.ts
 
 ```typescript
-import { Plugin, PluginContext, PluginResult, PluginResultType } from '@volt/plugin-api';
+import { Plugin, PluginContext, PluginResult, PluginResultType } from '@voltlaunchrr/plugin-api';
 
 export class MyExtension implements Plugin {
   id = 'my-extension';

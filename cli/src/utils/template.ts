@@ -83,7 +83,7 @@ export function generateIndexTs(opts: TemplateOptions): string {
   PluginContext,
   PluginResult,
   PluginResultType,
-} from '@volt/plugin-api';
+} from '@voltlaunchrr/plugin-api';
 
 export class ${className} implements Plugin {
   id = '${opts.id}';
@@ -132,7 +132,7 @@ export function generatePackageJson(opts: TemplateOptions): string {
     author: opts.author.name,
     license: 'MIT',
     dependencies: {
-      '@volt/plugin-api': '^0.1.0',
+      '@voltlaunchrr/plugin-api': '^0.1.0',
     },
     devDependencies: {
       typescript: '^5.3.3',

@@ -45,7 +45,7 @@ import {
   PluginContext,
   PluginResult,
   PluginResultType,
-} from "@volt/plugin-api";
+} from "@voltlaunchrr/plugin-api";
 
 export class MyPlugin implements Plugin {
   id = "my-first-plugin";
@@ -110,7 +110,7 @@ For better IDE support and type checking:
 
 ```bash
 npm init -y
-npm install @volt/plugin-api
+npm install @voltlaunchrr/plugin-api
 ```
 
 ## Next Steps

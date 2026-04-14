@@ -1,5 +1,5 @@
 {
-  "name": "@volt/plugin-cli",
+  "name": "@voltlaunchrr/plugin-cli",
   "version": "0.1.0",
   "description": "CLI for creating, testing, and publishing Volt extensions",
   "type": "module",

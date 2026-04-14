@@ -109,7 +109,7 @@ describe('generatePackageJson', () => {
     expect(parsed.name).toBe('my-plugin');
     expect(parsed.description).toBe('A plugin');
     expect(parsed.author).toBe('Author');
-    expect(parsed.dependencies['@volt/plugin-api']).toBeDefined();
+    expect(parsed.dependencies['@voltlaunchrr/plugin-api']).toBeDefined();
     expect(parsed.devDependencies.typescript).toBeDefined();
     expect(parsed.keywords).toContain('volt');
     expect(parsed.keywords).toContain('test');

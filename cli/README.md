@@ -1,11 +1,11 @@
-# @volt/plugin-cli
+# @voltlaunchrr/plugin-cli
 
 CLI tool for creating, validating, and packaging Volt extensions.
 
 ## Quick Start
 
 ```bash
-npm install -g @volt/plugin-cli
+npm install -g @voltlaunchrr/plugin-cli
 
 volt-plugin init my-extension    # Scaffold a new extension
 volt-plugin test                 # Validate manifest, interface, and types

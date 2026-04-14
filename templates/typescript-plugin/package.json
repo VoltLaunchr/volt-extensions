@@ -15,7 +15,7 @@
   "author": "Your Name",
   "license": "MIT",
   "dependencies": {
-    "@volt/plugin-api": "^0.1.0"
+    "@voltlaunchrr/plugin-api": "^0.1.0"
   },
   "devDependencies": {
     "typescript": "^5.3.3"

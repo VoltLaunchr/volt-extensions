@@ -7,7 +7,7 @@ Command-line tool for creating, validating, and packaging Volt extensions.
 Install globally via npm:
 
 ```bash
-npm install -g @volt/plugin-cli
+npm install -g @voltlaunchrr/plugin-cli
 ```
 
 Or run directly from the repository:
@@ -49,7 +49,7 @@ Generated files:
 my-plugin/
 ├── manifest.json    Extension metadata
 ├── index.ts         Plugin implementation with canHandle, match, execute
-├── package.json     npm package with @volt/plugin-api dependency
+├── package.json     npm package with @voltlaunchrr/plugin-api dependency
 └── tsconfig.json    TypeScript configuration
 ```
 
