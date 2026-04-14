@@ -14,6 +14,10 @@ Build your own plugins using our TypeScript or Rust API:
 
 ```bash
 npm install @voltlaunchrr/plugin-api
+# or
+bun add @voltlaunchrr/plugin-api
+# or
+pnpm add @voltlaunchrr/plugin-api
 ```
 
 ```typescript
@@ -107,6 +111,8 @@ The `volt-plugin` CLI streamlines extension development:
 
 ```bash
 npm install -g @voltlaunchrr/plugin-cli
+# or: bun add -g @voltlaunchrr/plugin-cli
+# or: pnpm add -g @voltlaunchrr/plugin-cli
 
 volt-plugin init my-extension    # Scaffold a new extension
 volt-plugin test                 # Validate manifest, interface, and types

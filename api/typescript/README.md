@@ -6,6 +6,8 @@ TypeScript API for building Volt launcher plugins.
 
 ```bash
 npm install @voltlaunchrr/plugin-api
+# or: bun add @voltlaunchrr/plugin-api
+# or: pnpm add @voltlaunchrr/plugin-api
 ```
 
 ## Quick Start

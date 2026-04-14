@@ -6,6 +6,8 @@ CLI tool for creating, validating, and packaging Volt extensions.
 
 ```bash
 npm install -g @voltlaunchrr/plugin-cli
+# or: bun add -g @voltlaunchrr/plugin-cli
+# or: pnpm add -g @voltlaunchrr/plugin-cli
 
 volt-plugin init my-extension    # Scaffold a new extension
 volt-plugin test                 # Validate manifest, interface, and types

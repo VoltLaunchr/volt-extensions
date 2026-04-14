@@ -6,6 +6,8 @@ Detailed guide for building TypeScript plugins for Volt.
 
 ```bash
 npm install @voltlaunchrr/plugin-api
+# or: bun add @voltlaunchrr/plugin-api
+# or: pnpm add @voltlaunchrr/plugin-api
 ```
 
 ## Project Setup
@@ -17,6 +19,8 @@ mkdir my-volt-plugin
 cd my-volt-plugin
 npm init -y
 npm install @voltlaunchrr/plugin-api
+# or: bun add @voltlaunchrr/plugin-api
+# or: pnpm add @voltlaunchrr/plugin-api
 npm install -D typescript @types/node
 ```
 

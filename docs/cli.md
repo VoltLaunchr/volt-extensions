@@ -8,6 +8,8 @@ Install globally via npm:
 
 ```bash
 npm install -g @voltlaunchrr/plugin-cli
+# or: bun add -g @voltlaunchrr/plugin-cli
+# or: pnpm add -g @voltlaunchrr/plugin-cli
 ```
 
 Or run directly from the repository:

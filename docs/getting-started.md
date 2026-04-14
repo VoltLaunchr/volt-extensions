@@ -111,6 +111,8 @@ For better IDE support and type checking:
 ```bash
 npm init -y
 npm install @voltlaunchrr/plugin-api
+# or: bun add @voltlaunchrr/plugin-api
+# or: pnpm add @voltlaunchrr/plugin-api
 ```
 
 ## Next Steps
