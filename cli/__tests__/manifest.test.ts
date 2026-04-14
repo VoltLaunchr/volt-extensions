@@ -1,0 +1,139 @@
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { validateManifest } from '../src/utils/manifest.js';
+
+const TEST_DIR = join(tmpdir(), 'volt-cli-test-manifest');
+
+function writeManifest(dir: string, manifest: Record<string, unknown>): void {
+  writeFileSync(join(dir, 'manifest.json'), JSON.stringify(manifest));
+}
+
+function validManifest(): Record<string, unknown> {
+  return {
+    id: 'test-plugin',
+    name: 'Test Plugin',
+    version: '1.0.0',
+    description: 'A test plugin',
+    author: { name: 'Test Author' },
+    main: 'index.ts',
+    category: 'utilities',
+    permissions: ['clipboard'],
+    keywords: ['test'],
+  };
+}
+
+describe('validateManifest', () => {
+  beforeEach(() => {
+    mkdirSync(TEST_DIR, { recursive: true });
+    // Create a dummy entry point
+    writeFileSync(join(TEST_DIR, 'index.ts'), 'export default {}');
+  });
+
+  afterEach(() => {
+    rmSync(TEST_DIR, { recursive: true, force: true });
+  });
+
+  it('passes for a valid manifest', async () => {
+    writeManifest(TEST_DIR, validManifest());
+    const result = await validateManifest(TEST_DIR);
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+  });
+
+  it('fails when manifest.json is missing', async () => {
+    const emptyDir = join(TEST_DIR, 'empty');
+    mkdirSync(emptyDir, { recursive: true });
+    const result = await validateManifest(emptyDir);
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContain('manifest.json not found');
+  });
+
+  it('fails for invalid JSON', async () => {
+    writeFileSync(join(TEST_DIR, 'manifest.json'), '{invalid}');
+    const result = await validateManifest(TEST_DIR);
+    expect(result.valid).toBe(false);
+    expect(result.errors[0]).toContain('not valid JSON');
+  });
+
+  it('fails when required fields are missing', async () => {
+    writeManifest(TEST_DIR, {});
+    const result = await validateManifest(TEST_DIR);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some((e) => e.includes('"id"'))).toBe(true);
+    expect(result.errors.some((e) => e.includes('"name"'))).toBe(true);
+    expect(result.errors.some((e) => e.includes('"version"'))).toBe(true);
+    expect(result.errors.some((e) => e.includes('"description"'))).toBe(true);
+    expect(result.errors.some((e) => e.includes('"author"'))).toBe(true);
+    expect(result.errors.some((e) => e.includes('"main"'))).toBe(true);
+  });
+
+  it('fails for invalid id format', async () => {
+    const m = validManifest();
+    m.id = 'Invalid Plugin';
+    writeManifest(TEST_DIR, m);
+    const result = await validateManifest(TEST_DIR);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some((e) => e.includes('kebab-case'))).toBe(true);
+  });
+
+  it('fails for invalid version format', async () => {
+    const m = validManifest();
+    m.version = 'v1.0';
+    writeManifest(TEST_DIR, m);
+    const result = await validateManifest(TEST_DIR);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some((e) => e.includes('semver'))).toBe(true);
+  });
+
+  it('fails for invalid category', async () => {
+    const m = validManifest();
+    m.category = 'invalid-category';
+    writeManifest(TEST_DIR, m);
+    const result = await validateManifest(TEST_DIR);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some((e) => e.includes('Invalid category'))).toBe(true);
+  });
+
+  it('fails for invalid permission', async () => {
+    const m = validManifest();
+    m.permissions = ['clipboard', 'teleportation'];
+    writeManifest(TEST_DIR, m);
+    const result = await validateManifest(TEST_DIR);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some((e) => e.includes('Invalid permission'))).toBe(true);
+  });
+
+  it('fails when entry point file does not exist', async () => {
+    const m = validManifest();
+    m.main = 'nonexistent.ts';
+    writeManifest(TEST_DIR, m);
+    const result = await validateManifest(TEST_DIR);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some((e) => e.includes('Entry point file not found'))).toBe(true);
+  });
+
+  it('fails for empty keywords array', async () => {
+    const m = validManifest();
+    m.keywords = [];
+    writeManifest(TEST_DIR, m);
+    const result = await validateManifest(TEST_DIR);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some((e) => e.includes('keywords'))).toBe(true);
+  });
+
+  it('passes when optional fields are omitted', async () => {
+    const m = {
+      id: 'minimal-plugin',
+      name: 'Minimal',
+      version: '1.0.0',
+      description: 'Minimal plugin',
+      author: { name: 'Author' },
+      main: 'index.ts',
+    };
+    writeManifest(TEST_DIR, m);
+    const result = await validateManifest(TEST_DIR);
+    expect(result.valid).toBe(true);
+  });
+});
