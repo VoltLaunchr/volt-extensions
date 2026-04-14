@@ -20,7 +20,7 @@
         "minVoltVersion": "0.4.0",
         "permissions": ["network"]
       },
-      "downloadUrl": "https://github.com/VoltLaunchr/volt-extensions/releases/download/github-v1.0.0/github-v1.0.0.zip",
+      "downloadUrl": "https://github.com/VoltLaunchr/volt-extensions/releases/download/github-v1.0.0/github-v1.0.0.tar.gz",
       "downloads": 0,
       "stars": 0,
       "verified": true,
@@ -46,7 +46,7 @@
         "minVoltVersion": "0.4.0",
         "permissions": ["network"]
       },
-      "downloadUrl": "https://github.com/VoltLaunchr/volt-extensions/releases/download/notion-v1.0.0/notion-v1.0.0.zip",
+      "downloadUrl": "https://github.com/VoltLaunchr/volt-extensions/releases/download/notion-v1.0.0/notion-v1.0.0.tar.gz",
       "downloads": 0,
       "stars": 0,
       "verified": true,
