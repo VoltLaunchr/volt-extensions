@@ -68,6 +68,7 @@ See [api/rust](api/rust/) for Rust plugin development.
 | [TypeScript API](docs/typescript-api.md) | Frontend plugin development |
 | [Rust API](docs/rust-api.md) | Backend plugin development (optional) |
 | [Publishing Extensions](docs/publishing.md) | Share your plugin with the community |
+| [CLI Tool](docs/cli.md) | Scaffold, validate, and package extensions |
 
 ## Examples
 
@@ -100,14 +101,19 @@ Currently available:
 |-----------|----------|--------|
 | [Password Generator](examples/password-generator/) | Utilities | VoltLaunchr Community |
 
-## Packaging
+## CLI Tool
 
-Use the packaging script to create distributable `.zip` files:
+The `volt-plugin` CLI streamlines extension development:
 
 ```bash
-node scripts/package-extension.js <extension-folder>
-# Output: dist/<extension-id>-v<version>.zip
+npm install -g @volt/plugin-cli
+
+volt-plugin init my-extension    # Scaffold a new extension
+volt-plugin test                 # Validate manifest, interface, and types
+volt-plugin publish              # Package and generate registry entry
 ```
+
+See the [CLI documentation](docs/cli.md) for details.
 
 ## Support
 
@@ -116,8 +122,4 @@ node scripts/package-extension.js <extension-folder>
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) for details.
-
----
-
-Made with ⚡ by the Volt team
+MIT License — see [LICENSE](LICENSE) for details.

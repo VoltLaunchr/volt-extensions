@@ -1,105 +1,25 @@
 # @volt/plugin-cli
 
-CLI tool for creating, testing, and publishing Volt extensions.
+CLI tool for creating, validating, and packaging Volt extensions.
 
-## Installation
+## Quick Start
 
 ```bash
 npm install -g @volt/plugin-cli
-```
 
-Or use directly from the repo:
-
-```bash
-cd cli
-npm install
-npm run build
-node bin/volt-plugin.mjs <command>
+volt-plugin init my-extension    # Scaffold a new extension
+volt-plugin test                 # Validate manifest, interface, and types
+volt-plugin publish              # Package and generate registry entry
 ```
 
 ## Commands
 
-### `volt-plugin init [name]`
+| Command | Description |
+|---------|-------------|
+| `init [name]` | Scaffold a new extension with interactive prompts |
+| `test` | Validate manifest, plugin interface, and TypeScript types |
+| `publish` | Create ZIP package and generate registry entry |
 
-Create a new Volt extension with interactive prompts.
+## Full Documentation
 
-```bash
-volt-plugin init my-awesome-plugin
-```
-
-Prompts for: name, description, author, category, permissions, prefix, keywords.
-
-Generates:
-- `manifest.json` — extension metadata
-- `index.ts` — Plugin class with `canHandle`, `match`, `execute`
-- `package.json` — npm package with `@volt/plugin-api` dependency
-- `tsconfig.json` — TypeScript configuration
-
-### `volt-plugin test`
-
-Validate your extension from within its directory.
-
-```bash
-cd my-awesome-plugin
-volt-plugin test
-```
-
-Checks:
-- **Manifest validation** — required fields, valid values
-- **Plugin interface** — default export with `canHandle`, `match`, `execute` methods
-- **TypeScript** — `tsc --noEmit` type checking
-
-### `volt-plugin publish`
-
-Package your extension for distribution.
-
-```bash
-cd my-awesome-plugin
-volt-plugin publish
-```
-
-Creates:
-- ZIP package (`<id>-v<version>.zip`)
-- Registry entry JSON for `registry.json`
-- Step-by-step PR submission instructions
-
-## Extension Structure
-
-```
-my-extension/
-├── manifest.json    # Metadata (id, name, version, permissions, etc.)
-├── index.ts         # Entry point implementing Plugin interface
-├── package.json     # Dependencies
-└── tsconfig.json    # TypeScript config
-```
-
-## Manifest Format
-
-```json
-{
-  "id": "my-plugin",
-  "name": "My Plugin",
-  "version": "1.0.0",
-  "description": "What it does",
-  "author": { "name": "Your Name", "github": "username" },
-  "main": "index.ts",
-  "category": "utilities",
-  "keywords": ["trigger", "words"],
-  "prefix": "mp",
-  "permissions": ["clipboard"],
-  "files": ["index.ts"]
-}
-```
-
-**Categories:** productivity, utilities, development, media, social, finance, games, other
-
-**Permissions:** clipboard, filesystem, network, shell, notifications
-
-## Development
-
-```bash
-npm install
-npm run build    # Compile TypeScript
-npm test         # Run tests
-npm run dev      # Watch mode
-```
+See [docs/cli.md](../docs/cli.md) for the complete reference including manifest format, categories, permissions, and development setup.
