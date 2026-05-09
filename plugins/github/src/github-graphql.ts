@@ -86,25 +86,20 @@ const ISSUE_FIELDS = `
 
 export class GitHubGraphQL {
   private readonly endpoint = 'https://api.github.com/graphql';
-  private token: string;
   private cache = new Map<string, { data: unknown; expiresAt: number }>();
   private readonly cacheTtlMs = 30_000;
-
-  constructor(token: string) {
-    this.token = token;
-  }
 
   private async post<T>(query: string, variables: Record<string, unknown> = {}): Promise<T> {
     const cacheKey = query + JSON.stringify(variables);
     const cached = this.cache.get(cacheKey);
     if (cached && Date.now() < cached.expiresAt) return cached.data as T;
 
+    // Authorization is injected by Volt's authenticated fetch proxy in Rust —
+    // the token never crosses the Worker boundary.
     const response = await fetch(this.endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.token}`,
-        'User-Agent': 'Volt-GitHub-Plugin/1.2.0',
       },
       body: JSON.stringify({ query, variables }),
     });

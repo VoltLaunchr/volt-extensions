@@ -63,22 +63,12 @@ export function formatStars(n: number): string {
 
 export class GitHubAPI {
   private baseUrl = 'https://api.github.com';
-  private token?: string;
   private rateLimitRemaining = 60;
   private rateLimitReset = 0;
 
   // TTL-based in-memory cache (keyed by serialized request)
   private cache = new Map<string, CacheEntry>();
   private readonly cacheTtlMs = 30_000; // 30 s
-
-  constructor(token?: string) {
-    this.token = token;
-  }
-
-  setToken(token: string | null): void {
-    this.token = token || undefined;
-    this.cache.clear();
-  }
 
   getRateLimitRemaining(): number {
     return this.rateLimitRemaining;
@@ -123,13 +113,11 @@ export class GitHubAPI {
       }
     }
 
+    // Authorization is injected by Volt's authenticated fetch proxy in Rust —
+    // the token never crosses the Worker boundary.
     const headers: Record<string, string> = {
       Accept: 'application/vnd.github.v3+json',
-      'User-Agent': 'Volt-GitHub-Plugin/1.1.0',
     };
-    if (this.token) {
-      headers.Authorization = `Bearer ${this.token}`;
-    }
 
     const response = await fetch(url.toString(), { headers });
 

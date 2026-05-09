@@ -21,9 +21,8 @@
 
 declare const VoltAPI: {
   utils: { openUrl: (url: string) => void };
-  getPreference: (key: string, defaultValue?: unknown) => Promise<unknown>;
-  setPreference: (key: string, value: string) => Promise<void>;
   showToast: (opts: { message: string; style?: 'info' | 'success' | 'error'; duration?: number }) => void;
+  saveCredential: (service: string, token: string) => void;
 };
 
 declare const PluginResultType: Record<string, string>;
@@ -60,7 +59,7 @@ interface Plugin {
   enabled: boolean;
   canHandle(ctx: PluginContext): boolean;
   match(ctx: PluginContext): Promise<PluginResult[]>;
-  execute(result: PluginResult): Promise<void>;
+  execute(result: PluginResult): void | Promise<void>;
 }
 
 const RESULT_TYPE = 'info';
@@ -148,23 +147,8 @@ export class GitHubPlugin implements Plugin {
   description = 'Search repos, issues, PRs, gists, notifications — and your own activity';
   enabled = true;
 
-  private api: GitHubAPI;
-  private gql: GitHubGraphQL | null = null;
-  private tokenLoaded = false;
-  private token: string | null = null;
-
-  constructor() { this.api = new GitHubAPI(); }
-
-  private async ensureToken(): Promise<void> {
-    if (this.tokenLoaded) return;
-    this.tokenLoaded = true;
-    const stored = (await VoltAPI.getPreference('github_token', null)) as string | null;
-    if (stored) {
-      this.token = stored;
-      this.api.setToken(stored);
-      this.gql = new GitHubGraphQL(stored);
-    }
-  }
+  private api = new GitHubAPI();
+  private gql = new GitHubGraphQL();
 
   canHandle(ctx: PluginContext): boolean {
     const q = ctx.query.toLowerCase().trim();
@@ -192,8 +176,6 @@ export class GitHubPlugin implements Plugin {
   }
 
   async match(ctx: PluginContext): Promise<PluginResult[]> {
-    await this.ensureToken();
-    if (this.api.isRateLimited()) return [this.rateLimitResult()];
     const { type, query } = this.parseQuery(ctx.query);
     try {
       switch (type) {
@@ -260,7 +242,7 @@ export class GitHubPlugin implements Plugin {
   }
 
   private async searchIssues(query: string): Promise<PluginResult[]> {
-    if (this.gql) {
+    try {
       const issues = await this.gql.searchIssues(applySortQualifiers(query) + ' is:issue', 10);
       return issues.map((issue, i) => ({
         id: `github-issue-${issue.id}`,
@@ -273,23 +255,24 @@ export class GitHubPlugin implements Plugin {
         data: { url: issue.url },
         accessories: this.issueAccessories(issue),
       }));
+    } catch {
+      // GraphQL requires auth — fall back to REST (works unauthenticated)
+      const issues = await this.api.searchIssues(query, 10);
+      return issues.map((issue, i) => ({
+        id: `github-issue-${issue.id}`,
+        type: RESULT_TYPE,
+        title: `🟢 #${issue.number} ${issue.title}`,
+        subtitle: `${issue.repository_url.split('/').slice(-2).join('/')} · ${issue.user.login}`,
+        icon: '📋',
+        badge: 'Issue',
+        score: 100 - i * 4,
+        data: { url: issue.html_url },
+        accessories: [
+          { icon: '💬', text: String(issue.comments) },
+          { text: relativeDate(issue.updated_at) },
+        ],
+      }));
     }
-    // REST fallback
-    const issues = await this.api.searchIssues(query, 10);
-    return issues.map((issue, i) => ({
-      id: `github-issue-${issue.id}`,
-      type: RESULT_TYPE,
-      title: `🟢 #${issue.number} ${issue.title}`,
-      subtitle: `${issue.repository_url.split('/').slice(-2).join('/')} · ${issue.user.login}`,
-      icon: '📋',
-      badge: 'Issue',
-      score: 100 - i * 4,
-      data: { url: issue.html_url },
-      accessories: [
-        { icon: '💬', text: String(issue.comments) },
-        { text: relativeDate(issue.updated_at) },
-      ],
-    }));
   }
 
   // ── PRs ───────────────────────────────────────────────────────────────────
@@ -307,7 +290,21 @@ export class GitHubPlugin implements Plugin {
   }
 
   private async searchPRs(query: string): Promise<PluginResult[]> {
-    if (!this.gql) {
+    try {
+      const prs = await this.gql.searchPullRequests(query, 10);
+      return prs.map((pr, i) => ({
+        id: `github-pr-${pr.id}`,
+        type: RESULT_TYPE,
+        title: `${prStatusDot(pr)} #${pr.number} ${pr.title}`,
+        subtitle: `${pr.repository.nameWithOwner}${pr.author ? ` · ${pr.author.login}` : ''}`,
+        icon: prStatusDot(pr),
+        badge: 'PR',
+        score: 100 - i * 4,
+        data: { url: pr.url },
+        accessories: this.prAccessories(pr),
+      }));
+    } catch {
+      // GraphQL requires auth — fall back to REST
       const issues = await this.api.searchIssues(`is:pr ${query}`, 10);
       return issues.map((issue, i) => ({
         id: `github-pr-${issue.id}`,
@@ -324,18 +321,6 @@ export class GitHubPlugin implements Plugin {
         ],
       }));
     }
-    const prs = await this.gql.searchPullRequests(query, 10);
-    return prs.map((pr, i) => ({
-      id: `github-pr-${pr.id}`,
-      type: RESULT_TYPE,
-      title: `${prStatusDot(pr)} #${pr.number} ${pr.title}`,
-      subtitle: `${pr.repository.nameWithOwner}${pr.author ? ` · ${pr.author.login}` : ''}`,
-      icon: prStatusDot(pr),
-      badge: 'PR',
-      score: 100 - i * 4,
-      data: { url: pr.url },
-      accessories: this.prAccessories(pr),
-    }));
   }
 
   // ── Gists ─────────────────────────────────────────────────────────────────
@@ -421,8 +406,12 @@ export class GitHubPlugin implements Plugin {
   // ── My PRs (GraphQL — sectioned like Raycast) ─────────────────────────────
 
   private async myPRs(): Promise<PluginResult[]> {
-    if (!this.gql) return [this.requiresTokenResult('my PRs')];
-    const sections = await this.gql.myPullRequests(8);
+    let sections: Awaited<ReturnType<GitHubGraphQL['myPullRequests']>>;
+    try {
+      sections = await this.gql.myPullRequests(8);
+    } catch {
+      return [this.requiresTokenResult('my PRs')];
+    }
     const results: PluginResult[] = [];
     let score = 100;
 
@@ -457,8 +446,12 @@ export class GitHubPlugin implements Plugin {
   // ── My Issues (GraphQL — sectioned) ──────────────────────────────────────
 
   private async myIssues(): Promise<PluginResult[]> {
-    if (!this.gql) return [this.requiresTokenResult('my issues')];
-    const sections = await this.gql.myIssues(8);
+    let sections: Awaited<ReturnType<GitHubGraphQL['myIssues']>>;
+    try {
+      sections = await this.gql.myIssues(8);
+    } catch {
+      return [this.requiresTokenResult('my issues')];
+    }
     const results: PluginResult[] = [];
     let score = 100;
 
@@ -492,10 +485,12 @@ export class GitHubPlugin implements Plugin {
   // ── My Repos (REST) ───────────────────────────────────────────────────────
 
   private async myRepos(): Promise<PluginResult[]> {
-    if (!this.token) return [this.requiresTokenResult('your repositories')];
+    // Authorization is injected by Volt's authenticated fetch proxy in Rust.
+    // A 401 means no token is configured yet.
     const response = await fetch('https://api.github.com/user/repos?sort=pushed&direction=desc&per_page=15&type=owner', {
-      headers: { Authorization: `Bearer ${this.token}`, 'User-Agent': 'Volt-GitHub-Plugin/1.2.0', Accept: 'application/vnd.github.v3+json' },
+      headers: { Accept: 'application/vnd.github.v3+json' },
     });
+    if (response.status === 401) return [this.requiresTokenResult('your repositories')];
     if (!response.ok) throw new Error(`GitHub API error: ${response.status}`);
     const repos = (await response.json()) as Array<{
       id: number; name: string; full_name: string; html_url: string;
@@ -525,10 +520,12 @@ export class GitHubPlugin implements Plugin {
   // ── Notifications (REST) ──────────────────────────────────────────────────
 
   private async notifications(): Promise<PluginResult[]> {
-    if (!this.token) return [this.requiresTokenResult('notifications')];
+    // Authorization is injected by Volt's authenticated fetch proxy in Rust.
+    // A 401 means no token is configured yet.
     const response = await fetch('https://api.github.com/notifications?all=false&per_page=20', {
-      headers: { Authorization: `Bearer ${this.token}`, 'User-Agent': 'Volt-GitHub-Plugin/1.2.0', Accept: 'application/vnd.github.v3+json' },
+      headers: { Accept: 'application/vnd.github.v3+json' },
     });
+    if (response.status === 401) return [this.requiresTokenResult('notifications')];
     if (!response.ok) {
       if (response.status === 403) throw new Error('Token needs `notifications` scope');
       throw new Error(`GitHub API error: ${response.status}`);
@@ -644,14 +641,11 @@ export class GitHubPlugin implements Plugin {
 
   // ── Execute ───────────────────────────────────────────────────────────────
 
-  async execute(result: PluginResult): Promise<void> {
+  execute(result: PluginResult): void {
     const data = result.data ?? {};
     if (data.action === 'save_token' && typeof data.token === 'string') {
-      await VoltAPI.setPreference('github_token', data.token);
-      this.token = data.token;
-      this.api.setToken(data.token);
-      this.gql = new GitHubGraphQL(data.token);
-      this.tokenLoaded = true;
+      // Token stored in OS keyring via Rust — never stored in extension state.
+      VoltAPI.saveCredential('github', data.token as string);
       VoltAPI.showToast({ message: 'GitHub token saved — my prs, my issues & notifs now available', style: 'success', duration: 4000 });
       return;
     }
