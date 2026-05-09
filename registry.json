@@ -1,12 +1,12 @@
 {
-  "version": "1.0.4",
-  "lastUpdated": "2026-05-09T14:55:00Z",
+  "version": "1.0.5",
+  "lastUpdated": "2026-05-09T16:20:00Z",
   "extensions": [
     {
       "manifest": {
         "id": "github",
         "name": "GitHub",
-        "version": "1.2.0",
+        "version": "1.2.1",
         "description": "Search GitHub repositories, issues, pull requests, and gists",
         "author": {
           "name": "VoltLaunchr Community",
@@ -20,13 +20,15 @@
         "minVoltVersion": "0.4.0",
         "permissions": ["network", "openUrl"]
       },
-      "downloadUrl": "https://github.com/VoltLaunchr/volt-extensions/releases/download/github-v1.2.0/github-v1.2.0.tar.gz",
+      "downloadUrl": "https://github.com/VoltLaunchr/volt-extensions/releases/download/github-v1.2.1/github-v1.2.1.tar.gz",
       "downloads": 0,
       "stars": 0,
       "verified": true,
       "featured": true,
       "createdAt": "2026-04-14T04:00:00Z",
-      "updatedAt": "2026-05-09T14:55:00Z"
+      "updatedAt": "2026-05-09T16:20:00Z",
+      "screenshots": [],
+      "readmeUrl": null
     },
     {
       "manifest": {
