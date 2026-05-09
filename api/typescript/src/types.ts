@@ -1,5 +1,21 @@
 // Plugin system types
 
+export type ActionHandler =
+  | 'openUrl'
+  | 'copyToClipboard'
+  | 'openFile'
+  | 'runCommand'
+  | 'custom';
+
+export interface PluginResultAction {
+  id: string;
+  title: string;
+  icon?: string;
+  shortcut?: string;
+  handler: ActionHandler;
+  data?: Record<string, unknown>;
+}
+
 export enum PluginResultType {
   Calculator = 'calculator',
   WebSearch = 'websearch',
@@ -25,6 +41,7 @@ export interface PluginResult {
   score: number;
   data?: Record<string, unknown>;
   pluginId?: string; // ID of the plugin that created this result
+  actions?: PluginResultAction[];
 }
 
 export interface PluginContext {
@@ -64,4 +81,58 @@ export interface IPluginRegistry {
   getAllPlugins(): Plugin[];
   getEnabledPlugins(): Plugin[];
   query(context: PluginContext): Promise<PluginResult[]>;
+}
+
+// ── Extension manifest types ─────────────────────────────────────────────────
+
+export type ExtensionPreferenceType =
+  | 'text'
+  | 'secret'
+  | 'number'
+  | 'boolean'
+  | 'select'
+  | 'file'
+  | 'directory';
+
+export interface ExtensionPreference {
+  name: string;
+  type: ExtensionPreferenceType;
+  title: string;
+  description?: string;
+  required?: boolean;
+  default?: string | number | boolean;
+  options?: string[];
+  min?: number;
+  max?: number;
+}
+
+/** A single named command exposed by the extension (multi-command support). */
+export interface ExtensionCommand {
+  name: string;
+  title: string;
+  description?: string;
+  main?: string;
+  prefix?: string;
+  keywords?: string[];
+  icon?: string;
+}
+
+export interface ExtensionManifest {
+  id: string;
+  name: string;
+  version: string;
+  description: string;
+  author: { name: string; github?: string; email?: string };
+  icon?: string;
+  keywords?: string[];
+  prefix?: string;
+  category?: string;
+  repository?: string;
+  homepage?: string;
+  license?: string;
+  minVoltVersion?: string;
+  permissions?: string[];
+  main?: string;
+  preferences?: ExtensionPreference[];
+  commands?: ExtensionCommand[];
 }

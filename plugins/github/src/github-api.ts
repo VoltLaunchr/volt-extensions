@@ -1,6 +1,5 @@
 /**
  * GitHub API Client for the Volt GitHub Plugin
- * Supports searching repositories, issues, pull requests, and gists
  */
 
 export interface GitHubRepo {
@@ -10,8 +9,10 @@ export interface GitHubRepo {
   description: string | null;
   html_url: string;
   stars: number;
+  forks: number;
   language: string | null;
   updated_at: string;
+  topics: string[];
 }
 
 export interface GitHubIssue {
@@ -20,14 +21,14 @@ export interface GitHubIssue {
   title: string;
   body: string | null;
   html_url: string;
-  user: {
-    login: string;
-  };
+  user: { login: string; avatar_url: string };
   created_at: string;
-  state: "open" | "closed";
-  pull_request?: {
-    html_url: string;
-  };
+  updated_at: string;
+  state: 'open' | 'closed';
+  labels: Array<{ name: string; color: string }>;
+  comments: number;
+  pull_request?: { html_url: string };
+  repository_url: string;
 }
 
 export interface GitHubGist {
@@ -35,199 +36,263 @@ export interface GitHubGist {
   html_url: string;
   description: string | null;
   public: boolean;
-  files: Record<string, { language: string | null }>;
+  files: Record<string, { language: string | null; size: number }>;
   created_at: string;
+  updated_at: string;
+  owner: { login: string };
+}
+
+export interface GitHubUser {
+  login: string;
+  name: string | null;
+  avatar_url: string;
+  html_url: string;
+  bio: string | null;
+  public_repos: number;
+  followers: number;
+  following: number;
+}
+
+type CacheEntry = { data: unknown; expiresAt: number };
+
+export function formatStars(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  return String(n);
 }
 
 export class GitHubAPI {
-  private baseUrl = "https://api.github.com";
+  private baseUrl = 'https://api.github.com';
   private token?: string;
-  private rateLimit = 60; // Unauthenticated: 60 req/hour
   private rateLimitRemaining = 60;
+  private rateLimitReset = 0;
+
+  // TTL-based in-memory cache (keyed by serialized request)
+  private cache = new Map<string, CacheEntry>();
+  private readonly cacheTtlMs = 30_000; // 30 s
 
   constructor(token?: string) {
     this.token = token;
-    if (token) {
-      this.rateLimit = 5000; // Authenticated: 5000 req/hour
-    }
   }
 
-  private async fetch(endpoint: string, params?: Record<string, string>) {
-    const url = new URL(`${this.baseUrl}${endpoint}`);
+  setToken(token: string | null): void {
+    this.token = token || undefined;
+    this.cache.clear();
+  }
 
+  getRateLimitRemaining(): number {
+    return this.rateLimitRemaining;
+  }
+
+  isRateLimited(): boolean {
+    return this.rateLimitRemaining === 0 && Date.now() / 1000 < this.rateLimitReset;
+  }
+
+  private getCacheKey(endpoint: string, params: Record<string, string>): string {
+    return endpoint + '?' + JSON.stringify(params);
+  }
+
+  private getFromCache(key: string): unknown | null {
+    const entry = this.cache.get(key);
+    if (!entry) return null;
+    if (Date.now() > entry.expiresAt) {
+      this.cache.delete(key);
+      return null;
+    }
+    return entry.data;
+  }
+
+  private setCache(key: string, data: unknown): void {
+    // Evict oldest entry when cache grows large
+    if (this.cache.size >= 50) {
+      const firstKey = this.cache.keys().next().value;
+      if (firstKey) this.cache.delete(firstKey);
+    }
+    this.cache.set(key, { data, expiresAt: Date.now() + this.cacheTtlMs });
+  }
+
+  private async request(endpoint: string, params?: Record<string, string>): Promise<unknown> {
+    const cacheKey = this.getCacheKey(endpoint, params ?? {});
+    const cached = this.getFromCache(cacheKey);
+    if (cached !== null) return cached;
+
+    const url = new URL(`${this.baseUrl}${endpoint}`);
     if (params) {
-      Object.entries(params).forEach(([key, value]) => {
+      for (const [key, value] of Object.entries(params)) {
         url.searchParams.append(key, value);
-      });
+      }
     }
 
     const headers: Record<string, string> = {
-      Accept: "application/vnd.github.v3+json",
-      "User-Agent": "Volt-GitHub-Plugin",
+      Accept: 'application/vnd.github.v3+json',
+      'User-Agent': 'Volt-GitHub-Plugin/1.1.0',
     };
-
     if (this.token) {
-      headers.Authorization = `token ${this.token}`;
+      headers.Authorization = `Bearer ${this.token}`;
     }
 
-    try {
-      const response = await fetch(url.toString(), { headers });
+    const response = await fetch(url.toString(), { headers });
 
-      // Track rate limit
-      const remaining = response.headers.get("X-RateLimit-Remaining");
-      if (remaining) {
-        this.rateLimitRemaining = parseInt(remaining, 10);
-      }
+    const remaining = response.headers.get('X-RateLimit-Remaining');
+    if (remaining) this.rateLimitRemaining = parseInt(remaining, 10);
+    const reset = response.headers.get('X-RateLimit-Reset');
+    if (reset) this.rateLimitReset = parseInt(reset, 10);
 
-      if (!response.ok) {
-        throw new Error(`GitHub API error: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error("GitHub API fetch error:", error);
-      throw error;
+    if (response.status === 401) {
+      throw new Error('GitHub token invalid or expired — update it in extension preferences');
     }
+    if (response.status === 403) {
+      const retryAfter = response.headers.get('Retry-After');
+      const msg = retryAfter
+        ? `Rate limited — retry in ${retryAfter}s`
+        : 'Rate limited (60 req/hr unauthenticated) — add a token to get 5 000/hr';
+      throw new Error(msg);
+    }
+    if (response.status === 422) {
+      throw new Error('Invalid search query — check GitHub search syntax');
+    }
+    if (!response.ok) {
+      throw new Error(`GitHub API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    this.setCache(cacheKey, data);
+    return data;
   }
 
-  /**
-   * Search repositories by query
-   * Examples: "type:repo nodejs", "language:rust stars:>1000"
-   */
-  async searchRepositories(query: string, limit: number = 10): Promise<GitHubRepo[]> {
-    try {
-      const response = await this.fetch("/search/repositories", {
-        q: query || "stars:>1000",
-        sort: "stars",
-        order: "desc",
-        per_page: limit.toString(),
-      });
+  async searchRepositories(query: string, limit = 10): Promise<GitHubRepo[]> {
+    const data = await this.request('/search/repositories', {
+      q: query || 'stars:>1000',
+      sort: 'stars',
+      order: 'desc',
+      per_page: String(limit),
+    }) as { items?: unknown[] };
 
-      return (response.items || []).map((item: any) => ({
-        id: item.id,
-        name: item.name,
-        full_name: item.full_name,
-        description: item.description,
-        html_url: item.html_url,
-        stars: item.stargazers_count,
-        language: item.language,
-        updated_at: item.updated_at,
-      }));
-    } catch (error) {
-      console.error("Error searching repositories:", error);
-      return [];
-    }
+    return (data.items ?? []).map((item: unknown) => {
+      const i = item as Record<string, unknown>;
+      return {
+        id: i.id as number,
+        name: i.name as string,
+        full_name: i.full_name as string,
+        description: (i.description as string | null) ?? null,
+        html_url: i.html_url as string,
+        stars: i.stargazers_count as number,
+        forks: i.forks_count as number,
+        language: (i.language as string | null) ?? null,
+        updated_at: i.updated_at as string,
+        topics: (i.topics as string[]) ?? [],
+      };
+    });
   }
 
-  /**
-   * Search issues and pull requests
-   * Examples: "is:pr author:torvalds", "is:issue label:bug", "repo:torvalds/linux type:issue"
-   */
-  async searchIssues(query: string, limit: number = 10): Promise<GitHubIssue[]> {
-    try {
-      const response = await this.fetch("/search/issues", {
-        q: query || "is:open",
-        sort: "updated",
-        order: "desc",
-        per_page: limit.toString(),
-      });
+  async searchIssues(query: string, limit = 10): Promise<GitHubIssue[]> {
+    const data = await this.request('/search/issues', {
+      q: query || 'is:open',
+      sort: 'updated',
+      order: 'desc',
+      per_page: String(limit),
+    }) as { items?: unknown[] };
 
-      return (response.items || []).map((item: any) => ({
-        id: item.id,
-        number: item.number,
-        title: item.title,
-        body: item.body,
-        html_url: item.html_url,
-        user: { login: item.user.login },
-        created_at: item.created_at,
-        state: item.state,
-        pull_request: item.pull_request,
-      }));
-    } catch (error) {
-      console.error("Error searching issues:", error);
-      return [];
-    }
+    return (data.items ?? []).map((item: unknown) => {
+      const i = item as Record<string, unknown>;
+      const user = i.user as Record<string, unknown>;
+      return {
+        id: i.id as number,
+        number: i.number as number,
+        title: i.title as string,
+        body: (i.body as string | null) ?? null,
+        html_url: i.html_url as string,
+        user: { login: user.login as string, avatar_url: user.avatar_url as string },
+        created_at: i.created_at as string,
+        updated_at: i.updated_at as string,
+        state: i.state as 'open' | 'closed',
+        labels: ((i.labels as Array<Record<string, unknown>>) ?? []).map((l) => ({
+          name: l.name as string,
+          color: l.color as string,
+        })),
+        comments: i.comments as number,
+        pull_request: i.pull_request as { html_url: string } | undefined,
+        repository_url: i.repository_url as string,
+      };
+    });
   }
 
-  /**
-   * Search gists
-   * Examples: "filename:package.json", "language:python", "user:torvalds"
-   */
-  async searchGists(query: string, limit: number = 10): Promise<GitHubGist[]> {
-    try {
-      const response = await this.fetch("/search/gists", {
-        q: query || "",
-        sort: "updated",
-        order: "desc",
-        per_page: limit.toString(),
-      });
+  async searchGists(query: string, limit = 10): Promise<GitHubGist[]> {
+    const data = await this.request('/search/gists', {
+      q: query || '',
+      sort: 'updated',
+      order: 'desc',
+      per_page: String(limit),
+    }) as { items?: unknown[] };
 
-      return (response.items || []).map((item: any) => ({
-        id: item.id,
-        html_url: item.html_url,
-        description: item.description,
-        public: item.public,
-        files: item.files,
-        created_at: item.created_at,
-      }));
-    } catch (error) {
-      console.error("Error searching gists:", error);
-      return [];
-    }
+    return (data.items ?? []).map((item: unknown) => {
+      const i = item as Record<string, unknown>;
+      const owner = (i.owner as Record<string, unknown>) ?? {};
+      return {
+        id: i.id as string,
+        html_url: i.html_url as string,
+        description: (i.description as string | null) ?? null,
+        public: i.public as boolean,
+        files: i.files as Record<string, { language: string | null; size: number }>,
+        created_at: i.created_at as string,
+        updated_at: i.updated_at as string,
+        owner: { login: owner.login as string },
+      };
+    });
   }
 
-  /**
-   * Get trending repositories (via search API)
-   * Gets popular repos from the past month
-   */
-  async getTrendingRepositories(language?: string, limit: number = 10): Promise<GitHubRepo[]> {
+  async getTrendingRepositories(language?: string, limit = 10): Promise<GitHubRepo[]> {
     const date = new Date();
-    date.setDate(date.getDate() - 30); // Last 30 days
-    const dateStr = date.toISOString().split("T")[0];
-
-    let query = `created:>${dateStr} sort:stars stars:>100`;
-    if (language) {
-      query += ` language:${language}`;
-    }
-
-    return this.searchRepositories(query, limit);
+    date.setDate(date.getDate() - 30);
+    const dateStr = date.toISOString().split('T')[0];
+    let q = `created:>${dateStr} sort:stars stars:>50`;
+    if (language) q += ` language:${language}`;
+    return this.searchRepositories(q, limit);
   }
 
-  /**
-   * Get user information and public repositories
-   */
-  async getUserRepos(username: string, limit: number = 10): Promise<GitHubRepo[]> {
+  async getUserRepos(username: string, limit = 10): Promise<GitHubRepo[]> {
+    const data = await this.request(`/users/${encodeURIComponent(username)}/repos`, {
+      sort: 'stars',
+      direction: 'desc',
+      per_page: String(limit),
+      type: 'owner',
+    });
+
+    if (!Array.isArray(data)) return [];
+
+    return (data as unknown[]).map((item: unknown) => {
+      const i = item as Record<string, unknown>;
+      return {
+        id: i.id as number,
+        name: i.name as string,
+        full_name: i.full_name as string,
+        description: (i.description as string | null) ?? null,
+        html_url: i.html_url as string,
+        stars: i.stargazers_count as number,
+        forks: i.forks_count as number,
+        language: (i.language as string | null) ?? null,
+        updated_at: i.updated_at as string,
+        topics: (i.topics as string[]) ?? [],
+      };
+    });
+  }
+
+  async getUser(username: string): Promise<GitHubUser | null> {
     try {
-      const response = await this.fetch(`/users/${username}/repos`, {
-        sort: "stars",
-        order: "desc",
-        per_page: limit.toString(),
-      });
-
-      if (!Array.isArray(response)) {
-        return [];
-      }
-
-      return response.map((item: any) => ({
-        id: item.id,
-        name: item.name,
-        full_name: item.full_name,
-        description: item.description,
-        html_url: item.html_url,
-        stars: item.stargazers_count,
-        language: item.language,
-        updated_at: item.updated_at,
-      }));
-    } catch (error) {
-      console.error(`Error fetching repos for user ${username}:`, error);
-      return [];
+      const data = await this.request(`/users/${encodeURIComponent(username)}`);
+      const i = data as Record<string, unknown>;
+      return {
+        login: i.login as string,
+        name: (i.name as string | null) ?? null,
+        avatar_url: i.avatar_url as string,
+        html_url: i.html_url as string,
+        bio: (i.bio as string | null) ?? null,
+        public_repos: i.public_repos as number,
+        followers: i.followers as number,
+        following: i.following as number,
+      };
+    } catch {
+      return null;
     }
-  }
-
-  /**
-   * Get remaining rate limit
-   */
-  getRateLimitRemaining(): number {
-    return this.rateLimitRemaining;
   }
 }

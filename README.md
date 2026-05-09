@@ -1,131 +1,76 @@
-# Volt Extensions
+# volt-extensions
 
-Official extension API, examples, and community plugins for [Volt launcher](https://github.com/VoltLaunchr/Volt).
+Official community extensions repository for [Volt](https://github.com/VoltLaunchr/Volt) — the keyboard-driven launcher.
 
-## What is Volt?
+## Structure
 
-Volt is a fast, modern desktop launcher for Windows, macOS, and Linux. Like Raycast or Alfred, but open-source and extensible.
-
-## Plugin API
-
-Build your own plugins using our TypeScript or Rust API:
-
-### TypeScript (Frontend Plugins)
-
-```bash
-npm install @voltlaunchrr/plugin-api
-# or
-bun add @voltlaunchrr/plugin-api
-# or
-pnpm add @voltlaunchrr/plugin-api
+```
+templates/          # Starter templates
+  typescript-plugin/  # TypeScript extension template
+  rust-plugin/        # Rust backend plugin template
+examples/           # Production-ready example extensions
+  password-generator/ # Crypto-secure password generator (EFF Diceware)
+cli/                # volt-plugin CLI tool (init, test, publish)
 ```
 
-```typescript
-import { Plugin, PluginContext, PluginResult, PluginResultType } from '@voltlaunchrr/plugin-api';
+## Quick Start
 
-export class MyPlugin implements Plugin {
-  id = 'my-plugin';
-  name = 'My Plugin';
-  description = 'Does something cool';
-  enabled = true;
-
-  canHandle(context: PluginContext): boolean {
-    return context.query.startsWith('my:');
-  }
-
-  async match(context: PluginContext): Promise<PluginResult[]> {
-    return [
-      {
-        id: 'result-1',
-        type: PluginResultType.Info,
-        title: 'Hello from my plugin!',
-        subtitle: 'Query: ' + context.query,
-        score: 100,
-      },
-    ];
-  }
-
-  async execute(result: PluginResult): Promise<void> {
-    console.log('Executed:', result.title);
-  }
-}
-
-export default MyPlugin;
-```
-
-### Rust (Backend Plugins)
-
-```toml
-[dependencies]
-volt-plugin-api = "0.1"
-```
-
-See [api/rust](api/rust/) for Rust plugin development.
-
-## Documentation
-
-| Guide | Description |
-|-------|-------------|
-| [Getting Started](docs/getting-started.md) | Create your first plugin in 5 minutes |
-| [Dev Workflow](docs/dev-workflow.md) | Test extensions locally with hot reload |
-| [Plugin API Reference](docs/plugin-api.md) | Complete API documentation |
-| [TypeScript API](docs/typescript-api.md) | Frontend plugin development |
-| [Rust API](docs/rust-api.md) | Backend plugin development (optional) |
-| [Publishing Extensions](docs/publishing.md) | Share your plugin with the community |
-| [CLI Tool](docs/cli.md) | Scaffold, validate, and package extensions |
-
-## Examples
-
-Working examples in [examples/](examples/):
-
-| Extension | Description | Trigger |
-|-----------|-------------|---------|
-| [Calculator](examples/calculator/) | Math expressions, unit conversions, date calculations, timezone conversions | `2+2`, `10km to miles`, `time in Tokyo` |
-| [Password Generator](examples/password-generator/) | Cryptographically secure passwords, passphrases (NIST/EFF standards) | `pass`, `pass strong`, `pass simple`, `pass phrase`, `pass pin` |
-| [Web Search](examples/websearch/) | Search Google, Bing, or DuckDuckGo from Volt | `?`, `web`, `search`, `google`, `bing`, `ddg` |
-
-## Extension Registry
-
-Published extensions are listed in [`registry.json`](registry.json). Volt uses this registry to power the extension store. See [Publishing Guide](docs/publishing.md) for how to add your extension.
-
-## Templates
-
-Quick-start templates for new plugins:
-
-- [TypeScript Plugin Template](templates/typescript-plugin/) - Frontend plugin boilerplate
-- [Rust Plugin Template](templates/rust-plugin/) - Backend plugin boilerplate
-
-## Community Extensions
-
-Want to share your plugin? See [community/](community/) for submission guidelines.
-
-Currently available:
-
-| Extension | Category | Author |
-|-----------|----------|--------|
-| [Password Generator](examples/password-generator/) | Utilities | VoltLaunchr Community |
-
-## CLI Tool
-
-The `volt-plugin` CLI streamlines extension development:
+### 1. Install the CLI
 
 ```bash
 npm install -g @voltlaunchrr/plugin-cli
-# or: bun add -g @voltlaunchrr/plugin-cli
-# or: pnpm add -g @voltlaunchrr/plugin-cli
-
-volt-plugin init my-extension    # Scaffold a new extension
-volt-plugin test                 # Validate manifest, interface, and types
-volt-plugin publish              # Package and generate registry entry
 ```
 
-See the [CLI documentation](docs/cli.md) for details.
+### 2. Scaffold a new extension
 
-## Support
+```bash
+volt-plugin init my-extension
+cd my-extension
+```
 
-- [Report a bug](https://github.com/VoltLaunchr/volt-extensions/issues)
-- [Request a feature](https://github.com/VoltLaunchr/volt-extensions/issues)
+The CLI prompts for: extension ID, name, description, author, category, permissions, trigger prefix, and keywords. It generates `manifest.json`, `src/index.ts`, `package.json`, `tsconfig.json`, and installs dependencies.
 
-## License
+### 3. Link to Volt for testing
 
-MIT License — see [LICENSE](LICENSE) for details.
+1. Open Volt → Settings → Extensions
+2. Click **Link Dev Extension**
+3. Select your extension folder
+4. Type your trigger keyword to test
+
+## Security model
+
+Extensions run in a **Web Worker sandbox** with the following restrictions:
+
+- `eval()`, `new Function()`, `WebSocket`, `XMLHttpRequest`, `importScripts()` are **disabled**
+- Fetch requests are proxied through Volt's network layer:
+  - Private IP ranges blocked (SSRF protection)
+  - HTTP redirects blocked
+  - `Cookie` / `Authorization` headers stripped
+  - Response body capped at 10 MB
+- Only these permissions are accepted by the backend: `clipboard`, `network`, `notifications`, `openUrl`
+- `installed.json` is HMAC-signed; a mismatch resets all `granted_permissions` (fail-closed)
+
+## CLI reference
+
+| Command | Description |
+|---------|-------------|
+| `volt-plugin init` | Scaffold a new extension with interactive prompts |
+| `volt-plugin test` | Validate manifest, plugin interface, and TypeScript types |
+| `volt-plugin publish` | Package as ZIP and output registry entry JSON |
+
+## Contributing
+
+1. Fork this repository
+2. Create a branch: `git checkout -b extension/my-extension`
+3. Add your extension under `extensions/`
+4. Run `volt-plugin test` to validate
+5. Open a Pull Request
+
+See [Publishing Guide](https://voltlaunchr.dev/docs/plugins/publishing) for the full submission process.
+
+## Documentation
+
+- [Plugin Development Guide](https://voltlaunchr.dev/docs/plugins/development)
+- [API Reference](https://voltlaunchr.dev/docs/plugins/api-reference)
+- [Best Practices](https://voltlaunchr.dev/docs/plugins/best-practices)
+- [Examples](https://voltlaunchr.dev/docs/plugins/examples)
