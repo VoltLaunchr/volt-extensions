@@ -3,6 +3,7 @@ import { writeFileSync, existsSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { execFile } from 'node:child_process';
 import { validateManifest } from '../utils/manifest.js';
+import { npxCommand } from '../utils/npm-bin.js';
 import * as log from '../utils/logger.js';
 
 const SENTINEL_FILE = '.volt-dev-reload';
@@ -15,7 +16,8 @@ function writeSentinel(dir: string): void {
 }
 
 function runTypeCheckAsync(dir: string): void {
-  execFile('npx', ['tsc', '--noEmit'], { cwd: dir }, (err, _stdout, stderr) => {
+  const command = npxCommand(['tsc', '--noEmit']);
+  execFile(command.command, command.args, { cwd: dir }, (err, _stdout, stderr) => {
     if (err) {
       const lines = stderr.trim().split('\n').slice(0, 5);
       for (const line of lines) log.warn(line);

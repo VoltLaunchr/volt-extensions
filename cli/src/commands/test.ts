@@ -2,9 +2,17 @@ import { readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
 import { validateManifest } from '../utils/manifest.js';
+import { validateAgainstSchemaFile } from '../utils/schema.js';
+import { preparePackageFiles } from '../utils/packaging.js';
+import { npxCommand } from '../utils/npm-bin.js';
+import { runEslint } from './lint.js';
 import * as log from '../utils/logger.js';
 
 const REQUIRED_METHODS = ['canHandle', 'match', 'execute'];
+
+export interface TestOptions {
+  dir?: string;
+}
 
 function checkPluginInterface(dir: string, main: string): string[] {
   const errors: string[] = [];
@@ -43,7 +51,8 @@ function checkPluginInterface(dir: string, main: string): string[] {
 
 function runTypeCheck(dir: string): { ok: boolean; output: string } {
   try {
-    execFileSync('npx', ['tsc', '--noEmit'], {
+    const command = npxCommand(['tsc', '--noEmit']);
+    execFileSync(command.command, command.args, {
       cwd: dir,
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe'],
@@ -58,13 +67,19 @@ function runTypeCheck(dir: string): { ok: boolean; output: string } {
   }
 }
 
-export async function testCommand(): Promise<void> {
-  const dir = process.cwd();
+function validateAgainstSchema(manifest: Record<string, unknown>): string[] {
+  return validateAgainstSchemaFile('manifest.schema.json', manifest).map(
+    (error) => `  ${error}`
+  );
+}
+
+export async function testCommand(options: TestOptions = {}): Promise<void> {
+  const dir = options.dir ?? process.cwd();
   let hasError = false;
 
   log.heading('Validating extension');
 
-  // 1. Manifest validation
+  // 1. Manifest validation (semantic checks)
   log.info('Checking manifest.json...');
   const result = await validateManifest(dir);
 
@@ -77,7 +92,25 @@ export async function testCommand(): Promise<void> {
     }
   }
 
-  // 2. Plugin interface check
+  // 2. JSON Schema validation
+  if (result.manifest) {
+    log.info('Validating against JSON Schema (voltlauncher.com/schemas/manifest.json)...');
+    try {
+      const schemaErrors = validateAgainstSchema(result.manifest);
+      if (schemaErrors.length === 0) {
+        log.success('Schema validation: OK');
+      } else {
+        hasError = true;
+        log.error('Schema violations:');
+        for (const e of schemaErrors) console.error(e);
+      }
+    } catch (err) {
+      hasError = true;
+      log.error(`Schema validation failed: ${String(err)}`);
+    }
+  }
+
+  // 3. Plugin interface check
   if (result.manifest?.main) {
     log.info('Checking Plugin interface...');
     const interfaceErrors = checkPluginInterface(
@@ -94,7 +127,18 @@ export async function testCommand(): Promise<void> {
     }
   }
 
-  // 3. TypeScript type-check
+  // 4. ESLint
+  log.info('Running ESLint...');
+  const lint = runEslint(dir);
+  if (lint.ok) {
+    log.success('ESLint: no errors');
+  } else {
+    hasError = true;
+    log.error('ESLint errors:');
+    console.log(lint.output);
+  }
+
+  // 5. TypeScript type-check
   log.info('Running TypeScript check...');
   const tsc = runTypeCheck(dir);
   if (tsc.ok) {
@@ -103,6 +147,21 @@ export async function testCommand(): Promise<void> {
     hasError = true;
     log.error('TypeScript errors:');
     console.log(tsc.output);
+  }
+
+  // 6. Package dry-run
+  if (result.manifest) {
+    log.info('Running package dry-run...');
+    const dryRun = preparePackageFiles(dir, result.manifest);
+    if (dryRun.errors.length === 0) {
+      log.success(`Package dry-run: ${dryRun.files.length} files ready`);
+    } else {
+      hasError = true;
+      log.error('Package dry-run failed:');
+      for (const err of dryRun.errors) {
+        console.error(`  ${err}`);
+      }
+    }
   }
 
   // Summary

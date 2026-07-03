@@ -25,8 +25,6 @@ declare const VoltAPI: {
   saveCredential: (service: string, token: string) => void;
 };
 
-declare const PluginResultType: Record<string, string>;
-
 import { GitHubAPI, formatStars, GitHubRepo } from './github-api';
 import { GitHubGraphQL, GQLPullRequest, GQLIssue, ReviewDecision, CheckState } from './github-graphql';
 

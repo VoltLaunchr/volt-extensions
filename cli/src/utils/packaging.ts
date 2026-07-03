@@ -1,16 +1,40 @@
-import { createWriteStream, existsSync, readdirSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import {
+  createWriteStream,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  statSync,
+} from 'node:fs';
+import { createHash } from 'node:crypto';
+import { join, relative, basename } from 'node:path';
 import archiver from 'archiver';
 
 const DEFAULT_EXCLUDES = [
   'node_modules',
   '.git',
   'dist',
+  '.volt-publish',
+  '.volt-store',
+  'coverage',
   '.DS_Store',
   'Thumbs.db',
 ];
 
 const EXCLUDE_PATTERNS = [/\.test\.[jt]sx?$/, /\.spec\.[jt]sx?$/];
+const FORBIDDEN_PACKAGE_PATTERNS = [
+  /(^|[/\\])\.env($|[./\\])/,
+  /(^|[/\\])\.npmrc$/,
+  /(^|[/\\])\.netrc$/,
+  /(^|[/\\])id_rsa$/,
+  /(^|[/\\])id_ed25519$/,
+  /(^|[/\\]).*\.(pem|key|p12|pfx)$/,
+  /(^|[/\\]).*\.(zip|tar|tar\.gz|tgz|7z|rar)$/,
+];
+
+function toPackagePath(path: string): string {
+  return path.replace(/\\/g, '/').replace(/^\.\/+/, '');
+}
 
 function shouldExclude(relativePath: string): boolean {
   const parts = relativePath.split(/[\\/]/);
@@ -23,7 +47,7 @@ function collectFiles(dir: string, base: string): string[] {
   const entries = readdirSync(dir, { withFileTypes: true });
   for (const entry of entries) {
     const fullPath = join(dir, entry.name);
-    const rel = relative(base, fullPath);
+    const rel = toPackagePath(relative(base, fullPath));
     if (shouldExclude(rel)) continue;
     if (entry.isDirectory()) {
       files.push(...collectFiles(fullPath, base));
@@ -46,7 +70,7 @@ function resolveManifestFiles(
     if (stat.isDirectory()) {
       resolved.push(...collectFiles(fullPath, dir));
     } else {
-      resolved.push(entry);
+      resolved.push(toPackagePath(entry));
     }
   }
   // Always include manifest.json
@@ -56,22 +80,21 @@ function resolveManifestFiles(
   return [...new Set(resolved)];
 }
 
-export interface PackageResult {
-  outputPath: string;
-  files: string[];
-  size: number;
+export function validatePackageFiles(files: string[]): string[] {
+  return files
+    .filter((file) => FORBIDDEN_PACKAGE_PATTERNS.some((pattern) => pattern.test(file)))
+    .map((file) => `Forbidden file in extension package: ${file}`);
 }
 
-export async function packageExtension(
+export interface PackageDryRunResult {
+  files: string[];
+  errors: string[];
+}
+
+export function preparePackageFiles(
   dir: string,
   manifest: Record<string, unknown>
-): Promise<PackageResult> {
-  const id = manifest.id as string;
-  const version = manifest.version as string;
-  const outputName = `${id}-v${version}.zip`;
-  const outputPath = join(dir, outputName);
-
-  // Determine files to include
+): PackageDryRunResult {
   let files: string[];
   if (
     Array.isArray(manifest.files) &&
@@ -82,10 +105,65 @@ export async function packageExtension(
     files = collectFiles(dir, dir);
   }
 
-  // Always include manifest.json
   if (!files.includes('manifest.json')) {
     files.push('manifest.json');
   }
+
+  const uniqueFiles = [...new Set(files)].sort();
+  return {
+    files: uniqueFiles,
+    errors: validatePackageFiles(uniqueFiles),
+  };
+}
+
+export interface PackageResult {
+  outputPath: string;
+  files: string[];
+  size: number;
+  sha256: string;
+}
+
+export interface PackageOptions {
+  outputDir?: string;
+}
+
+export interface PackageManifest {
+  schemaVersion: 1;
+  extension: {
+    id: string;
+    version: string;
+    name?: string;
+  };
+  artifact: {
+    fileName: string;
+    size: number;
+    sha256: string;
+  };
+  files: string[];
+  generatedAt: string;
+}
+
+export function sha256File(path: string): string {
+  return createHash('sha256').update(readFileSync(path)).digest('hex');
+}
+
+export async function packageExtension(
+  dir: string,
+  manifest: Record<string, unknown>,
+  options: PackageOptions = {}
+): Promise<PackageResult> {
+  const id = manifest.id as string;
+  const version = manifest.version as string;
+  const outputName = `${id}-v${version}.zip`;
+  const outputDir = options.outputDir ?? dir;
+  const outputPath = join(outputDir, outputName);
+
+  const dryRun = preparePackageFiles(dir, manifest);
+  if (dryRun.errors.length > 0) {
+    throw new Error(dryRun.errors.join('\n'));
+  }
+  const files = dryRun.files;
+  mkdirSync(outputDir, { recursive: true });
 
   return new Promise((resolve, reject) => {
     const output = createWriteStream(outputPath);
@@ -96,6 +174,7 @@ export async function packageExtension(
         outputPath,
         files,
         size: archive.pointer(),
+        sha256: sha256File(outputPath),
       });
     });
 
@@ -110,12 +189,77 @@ export async function packageExtension(
   });
 }
 
+export function generatePackageManifest(
+  manifest: Record<string, unknown>,
+  pkg: PackageResult,
+  generatedAt = new Date().toISOString()
+): PackageManifest {
+  const id = manifest.id as string;
+  const version = manifest.version as string;
+  const name = typeof manifest.name === 'string' ? manifest.name : undefined;
+
+  return {
+    schemaVersion: 1,
+    extension: {
+      id,
+      version,
+      ...(name ? { name } : {}),
+    },
+    artifact: {
+      fileName: basename(pkg.outputPath),
+      size: pkg.size,
+      sha256: pkg.sha256,
+    },
+    files: pkg.files,
+    generatedAt,
+  };
+}
+
+const SCREENSHOT_EXTS = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif']);
+
+/**
+ * Collect screenshot URLs from `metadata/` folder.
+ * In the published registry, screenshots are hosted as GitHub release assets.
+ * Returns relative paths so the publisher can upload them or convert to absolute URLs.
+ */
+export function collectMetadata(
+  dir: string,
+  extensionId: string,
+  version: string
+): { screenshots: string[]; readmeUrl: string | null } {
+  const metaDir = join(dir, 'metadata');
+  if (!existsSync(metaDir)) {
+    return { screenshots: [], readmeUrl: null };
+  }
+
+  const base = `https://github.com/VoltLaunchr/volt-extensions/releases/download/${extensionId}-v${version}`;
+  const entries = readdirSync(metaDir).sort();
+
+  const screenshots: string[] = [];
+  let readmeUrl: string | null = null;
+
+  for (const entry of entries) {
+    const ext = entry.slice(entry.lastIndexOf('.')).toLowerCase();
+    const name = basename(entry);
+    if (SCREENSHOT_EXTS.has(ext) && /^screenshot/i.test(name)) {
+      screenshots.push(`${base}/${name}`);
+    } else if (name === 'description.md') {
+      readmeUrl = `${base}/description.md`;
+    }
+  }
+
+  return { screenshots, readmeUrl };
+}
+
 export function generateRegistryEntry(
-  manifest: Record<string, unknown>
+  dir: string,
+  manifest: Record<string, unknown>,
+  options: { sha256?: string } = {}
 ): Record<string, unknown> {
   const id = manifest.id as string;
   const version = manifest.version as string;
   const now = new Date().toISOString();
+  const { screenshots, readmeUrl } = collectMetadata(dir, id, version);
 
   return {
     manifest,
@@ -126,5 +270,8 @@ export function generateRegistryEntry(
     featured: false,
     createdAt: now,
     updatedAt: now,
+    ...(options.sha256 ? { sha256: options.sha256 } : {}),
+    ...(screenshots.length > 0 ? { screenshots } : {}),
+    ...(readmeUrl ? { readmeUrl } : {}),
   };
 }
