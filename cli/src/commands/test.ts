@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { validateManifest } from '../utils/manifest.js';
 import { validateAgainstSchemaFile } from '../utils/schema.js';
 import { preparePackageFiles } from '../utils/packaging.js';
+import { npxCommand } from '../utils/npm-bin.js';
 import { runEslint } from './lint.js';
 import * as log from '../utils/logger.js';
 
@@ -50,7 +51,8 @@ function checkPluginInterface(dir: string, main: string): string[] {
 
 function runTypeCheck(dir: string): { ok: boolean; output: string } {
   try {
-    execFileSync('npx', ['tsc', '--noEmit'], {
+    const command = npxCommand(['tsc', '--noEmit']);
+    execFileSync(command.command, command.args, {
       cwd: dir,
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe'],

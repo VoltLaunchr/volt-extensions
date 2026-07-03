@@ -9,6 +9,8 @@ build/
 
 # Package managers
 package-lock.json
+!cli/package-lock.json
+!api/typescript/package-lock.json
 yarn.lock
 Cargo.lock
 

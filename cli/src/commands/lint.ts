@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
+import { npxCommand } from '../utils/npm-bin.js';
 import * as log from '../utils/logger.js';
 
 export interface LintOptions {
@@ -35,7 +36,8 @@ export function runEslint(dir: string): LintResult {
   }
 
   try {
-    execFileSync('npx', ['eslint', '.'], {
+    const command = npxCommand(['eslint', '.']);
+    execFileSync(command.command, command.args, {
       cwd: dir,
       encoding: 'utf-8',
       stdio: ['ignore', 'pipe', 'pipe'],
