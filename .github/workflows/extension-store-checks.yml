@@ -1,0 +1,63 @@
+name: Extension Store Checks
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  validate:
+    name: Validate extension store
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install CLI dependencies
+        run: npm ci --prefix cli
+
+      - name: Test CLI
+        run: npm test --prefix cli
+
+      - name: Build CLI
+        run: npm run build --prefix cli
+
+      - name: Validate registry
+        run: npm run validate:registry --prefix cli
+
+      - name: Detect changed extensions
+        run: node scripts/changed-extensions.mjs > changed-extensions.txt
+
+      - name: Validate changed extensions
+        shell: bash
+        run: |
+          if [ ! -s changed-extensions.txt ]; then
+            echo "No changed extensions detected."
+            exit 0
+          fi
+
+          while IFS= read -r dir; do
+            echo "::group::${dir}"
+            if [ -f "${dir}/package-lock.json" ]; then
+              npm ci --prefix "${dir}"
+            elif [ -f "${dir}/package.json" ]; then
+              npm install --prefix "${dir}"
+            fi
+            node cli/dist/index.js test --dir "${dir}"
+            echo "::endgroup::"
+          done < changed-extensions.txt
+
+      - name: Install TypeScript API dependencies
+        run: npm ci --prefix api/typescript
+
+      - name: Build TypeScript API
+        run: npm run build --prefix api/typescript

@@ -51,11 +51,30 @@ Generated files:
 my-plugin/
 ├── manifest.json    Extension metadata
 ├── index.ts         Plugin implementation with canHandle, match, execute
+├── eslint.config.js ESLint flat config
+├── .prettierrc      Prettier formatting config
 ├── package.json     npm package with @voltlaunchrr/plugin-api dependency
 └── tsconfig.json    TypeScript configuration
 ```
 
 Dependencies are installed automatically using whichever package manager is detected (bun, pnpm, or npm).
+
+### lint
+
+Run ESLint for an extension.
+
+```bash
+cd my-plugin
+volt-plugin lint
+```
+
+For CI or monorepo usage:
+
+```bash
+volt-plugin lint --dir plugins/github
+```
+
+`volt-plugin lint` delegates to the extension's local ESLint configuration. Volt-specific rules should live in the dedicated ESLint plugin/config package and be imported from `eslint.config.js`.
 
 ### test
 
@@ -66,39 +85,82 @@ cd my-plugin
 volt-plugin test
 ```
 
-Runs three checks in sequence:
+For CI or monorepo usage:
+
+```bash
+volt-plugin test --dir plugins/github
+```
+
+Runs checks in sequence:
 
 1. **Manifest validation** — verifies all required fields (`id`, `name`, `version`, `description`, `author`, `main`), valid category, valid permissions, kebab-case ID format
-2. **Plugin interface** — checks that the entry point has a default export and implements `canHandle()`, `match()`, `execute()`
-3. **TypeScript** — runs `tsc --noEmit` to catch type errors without emitting files
+2. **JSON Schema validation** — validates `manifest.json` against `schemas/manifest.schema.json`
+3. **Plugin interface** — checks that the entry point has a default export and implements `canHandle()`, `match()`, `execute()`
+4. **ESLint** — runs the extension's local ESLint config
+5. **TypeScript** — runs `tsc --noEmit` to catch type errors without emitting files
+6. **Package dry-run** — verifies the package file list and rejects forbidden files
 
 Exits with code 1 if any check fails.
 
 ### publish
 
-Package an extension for distribution and generate a registry entry.
+Package an extension for store review and generate submission artifacts.
 
 ```bash
 cd my-plugin
 volt-plugin publish
 ```
 
+For CI or monorepo usage:
+
+```bash
+volt-plugin publish --dir plugins/github --out-dir .volt-publish/github-v1.2.1
+```
+
 Steps performed:
 
 1. Validates the manifest (same checks as `test`)
-2. Creates a ZIP archive named `{id}-v{version}.zip` containing the extension files
-3. Prints a JSON registry entry to add to `registry.json`
-4. Outputs step-by-step instructions for submitting to the extension store
+2. Checks optional `metadata/` assets for store listing quality
+3. Creates a ZIP archive named `{id}-v{version}.zip` containing the extension files
+4. Computes the archive SHA-256 checksum
+5. Writes machine-readable review artifacts under `.volt-publish/{id}-v{version}/`
+6. Outputs the review-first PR workflow
 
-The output includes the exact PR workflow:
+Generated files:
 
 ```
-1. Fork VoltLaunchr/volt-extensions on GitHub
-2. Create a GitHub release with tag: {id}-v{version}
-3. Upload the ZIP to the release
-4. Add the registry entry to registry.json
-5. Submit a pull request
+.volt-publish/{id}-v{version}/
+├── artifacts/{id}-v{version}.zip
+├── package-manifest.json
+├── pull-request-body.md
+├── registry-entry.json
+├── registry-patch.json
+└── submission.json
 ```
+
+Review flow:
+
+```
+1. Commit the extension source under the store source directory.
+2. Include or attach submission.json in the PR.
+3. Maintainers review the source, registry patch, package manifest, and checksum.
+4. After merge, the release workflow publishes the archive.
+```
+
+### `volt-plugin validate-registry`
+
+Validate the public store registry from the repo root or any subdirectory:
+
+```bash
+volt-plugin validate-registry
+```
+
+Checks performed:
+
+1. Validates `registry.json` against `schemas/registry.schema.json`
+2. Verifies release URLs use the `{id}-v{version}` tag and a supported archive format
+3. Rejects duplicate extension IDs
+4. Compares registry manifests with local source manifests under `plugins/`, `extensions/`, `community/`, and `examples/`
 
 ## Manifest Reference
 
@@ -120,17 +182,19 @@ The output includes the exact PR workflow:
 
 ### Categories
 
-`productivity`, `utilities`, `development`, `media`, `social`, `finance`, `games`, `other`
+`productivity`, `utilities`, `developer`, `media`, `social`, `finance`, `games`, `system`, `other`
 
 ### Permissions
 
 | Permission | Description |
 |-----------|-------------|
 | `clipboard` | Read/write system clipboard |
-| `filesystem` | Access local files through Volt API |
 | `network` | Make HTTP requests |
-| `shell` | Execute shell commands |
 | `notifications` | Show system notifications |
+| `openUrl` | Open links in the default browser |
+| `oauth` | Run OAuth PKCE flows and read extension OAuth tokens |
+| `ai` | Call configured AI providers through Volt |
+| `system` | List installed applications, reveal files, and move files to Trash |
 
 ## Development
 
@@ -147,4 +211,5 @@ npm run dev       # Watch mode
 - [Getting Started](getting-started.md) — Create your first extension
 - [Plugin API Reference](plugin-api.md) — Full interface documentation
 - [Dev Workflow](dev-workflow.md) — Hot reload and local testing
+- [Prepare Extension For Store](prepare-extension-for-store.md) — Store review checklist
 - [Publishing](publishing.md) — Submit to the extension store

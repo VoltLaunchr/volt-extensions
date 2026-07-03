@@ -105,6 +105,24 @@ describe('validateManifest', () => {
     expect(result.errors.some((e) => e.includes('Invalid permission'))).toBe(true);
   });
 
+  it('passes for all current Volt runtime permissions', async () => {
+    const m = validManifest();
+    m.permissions = ['clipboard', 'network', 'notifications', 'openUrl', 'oauth', 'ai', 'system'];
+    m.category = 'developer';
+    writeManifest(TEST_DIR, m);
+    const result = await validateManifest(TEST_DIR);
+    expect(result.valid).toBe(true);
+  });
+
+  it('rejects legacy permissions not supported by the extension runtime', async () => {
+    const m = validManifest();
+    m.permissions = ['filesystem', 'shell'];
+    writeManifest(TEST_DIR, m);
+    const result = await validateManifest(TEST_DIR);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some((e) => e.includes('Invalid permission'))).toBe(true);
+  });
+
   it('fails when entry point file does not exist', async () => {
     const m = validManifest();
     m.main = 'nonexistent.ts';

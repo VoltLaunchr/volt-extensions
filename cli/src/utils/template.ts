@@ -126,7 +126,10 @@ export function generatePackageJson(opts: TemplateOptions): string {
     main: 'dist/index.js',
     scripts: {
       build: 'tsc',
+      lint: 'volt-plugin lint',
+      format: 'prettier --write .',
       watch: 'tsc --watch',
+      test: 'volt-plugin test',
     },
     keywords: ['volt', 'plugin', ...opts.keywords],
     author: opts.author.name,
@@ -135,6 +138,11 @@ export function generatePackageJson(opts: TemplateOptions): string {
       '@voltlaunchrr/plugin-api': '^0.1.0',
     },
     devDependencies: {
+      '@eslint/js': '^9.0.0',
+      '@voltlaunchrr/plugin-cli': '^0.1.0',
+      eslint: '^9.0.0',
+      prettier: '^3.0.0',
+      'typescript-eslint': '^8.0.0',
       typescript: '^5.3.3',
     },
   };
@@ -177,6 +185,13 @@ export function scaffoldExtension(
         2
       ) + '\n'
     );
+  }
+
+  for (const file of ['eslint.config.js', '.prettierrc']) {
+    const src = join(templateDir, file);
+    if (existsSync(src)) {
+      copyFileSync(src, join(targetDir, file));
+    }
   }
 
   // Generate manifest.json

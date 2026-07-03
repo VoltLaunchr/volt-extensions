@@ -5,11 +5,12 @@
 export const VALID_CATEGORIES = [
   'productivity',
   'utilities',
-  'development',
+  'developer',
   'media',
   'social',
   'finance',
   'games',
+  'system',
   'other',
 ] as const;
 
@@ -21,10 +22,12 @@ export type ExtensionCategory = (typeof VALID_CATEGORIES)[number];
  */
 export const VALID_PERMISSIONS = [
   'clipboard',
-  'filesystem',
   'network',
-  'shell',
   'notifications',
+  'openUrl',
+  'oauth',
+  'ai',
+  'system',
 ] as const;
 
 export type ExtensionPermission = (typeof VALID_PERMISSIONS)[number];

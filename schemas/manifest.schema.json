@@ -1,0 +1,213 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://voltlauncher.com/schemas/manifest.json",
+  "title": "Volt Extension Manifest",
+  "description": "Schema for Volt extension manifest.json files",
+  "type": "object",
+  "required": ["id", "name", "version", "description", "author", "main"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference (for IDE support)"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "Unique kebab-case identifier (e.g. 'my-extension')"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "description": "Human-readable display name"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semver version string (e.g. '1.0.0')"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 280,
+      "description": "Short description shown in the Extension Store"
+    },
+    "author": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "github": { "type": "string" },
+        "email": { "type": "string", "format": "email" }
+      }
+    },
+    "main": {
+      "type": "string",
+      "description": "Entry point file relative to the extension root (e.g. 'src/index.ts')"
+    },
+    "icon": {
+      "type": "string",
+      "description": "URL or relative path to the extension icon (PNG/SVG, 64×64 recommended)"
+    },
+    "keywords": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1,
+      "description": "Trigger keywords — queries starting with one of these activate the extension"
+    },
+    "prefix": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Single trigger prefix (e.g. 'gh' activates the extension when the query starts with 'gh')"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "productivity",
+        "utilities",
+        "developer",
+        "media",
+        "social",
+        "finance",
+        "games",
+        "system",
+        "other"
+      ],
+      "description": "Extension category shown in the Extension Store"
+    },
+    "permissions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["clipboard", "network", "notifications", "openUrl", "oauth", "ai", "system"]
+      },
+      "uniqueItems": true,
+      "description": "Permissions the user must grant before the extension loads"
+    },
+    "repository": {
+      "type": "string",
+      "format": "uri",
+      "description": "Source code URL (shown in Extension Store)"
+    },
+    "homepage": {
+      "type": "string",
+      "format": "uri"
+    },
+    "license": {
+      "type": "string",
+      "description": "SPDX license identifier (e.g. 'MIT')"
+    },
+    "minVoltVersion": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Minimum Volt version required to run this extension"
+    },
+    "files": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Explicit file/folder list included in the published ZIP (defaults to all files)"
+    },
+    "preferences": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/ExtensionPreference" },
+      "description": "Declarative user preferences shown in the Extension Settings dialog"
+    },
+    "commands": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/ExtensionCommand" },
+      "description": "Named sub-commands — each surfaces as its own search result in Volt"
+    },
+    "backgroundRefresh": {
+      "$ref": "#/definitions/ExtensionBackgroundRefresh",
+      "description": "Optional background refresh cadence for cached extension results"
+    }
+  },
+  "definitions": {
+    "ExtensionPreference": {
+      "type": "object",
+      "required": ["name", "type", "title"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$",
+          "description": "Preference key used in voltApi.getPreference('key')"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["text", "secret", "number", "boolean", "select", "file", "directory", "oauth"],
+          "description": "Field type — 'secret' values are stored in the OS keyring"
+        },
+        "title": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+        "required": { "type": "boolean", "default": false },
+        "default": {
+          "description": "Default value (must match the field type)"
+        },
+        "options": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1,
+          "description": "Only for type 'select' — list of allowed values"
+        },
+        "min": { "type": "number", "description": "Only for type 'number'" },
+        "max": { "type": "number", "description": "Only for type 'number'" },
+        "oauthProvider": { "type": "string", "description": "Only for type 'oauth'" },
+        "oauthAuthUrl": { "type": "string", "format": "uri", "description": "Only for type 'oauth'" },
+        "oauthTokenUrl": { "type": "string", "format": "uri", "description": "Only for type 'oauth'" },
+        "oauthClientId": { "type": "string", "description": "Only for type 'oauth'" },
+        "oauthScopes": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Only for type 'oauth'"
+        }
+      }
+    },
+    "ExtensionCommand": {
+      "type": "object",
+      "required": ["name", "title"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Unique command name within this extension (kebab-case)"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable command title shown in search results"
+        },
+        "description": { "type": "string" },
+        "main": {
+          "type": "string",
+          "description": "Entry point override for this command (relative to extension root)"
+        },
+        "prefix": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Trigger prefix override for this specific command"
+        },
+        "keywords": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "icon": { "type": "string" }
+      }
+    },
+    "ExtensionBackgroundRefresh": {
+      "type": "object",
+      "required": ["interval"],
+      "additionalProperties": false,
+      "properties": {
+        "interval": {
+          "type": "string",
+          "pattern": "^\\d+(s|m|h)$",
+          "description": "Refresh interval such as '30s', '5m', or '1h'"
+        }
+      }
+    }
+  }
+}

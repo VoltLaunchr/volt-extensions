@@ -193,6 +193,16 @@ async execute(result: PluginResult): Promise<void> {
 }
 ```
 
+Runtime APIs with backend permission gates:
+
+| API | Permission |
+|-----|------------|
+| `VoltAPI.storage.*` | Enabled extension only |
+| `VoltAPI.oauth.*` | `oauth` |
+| `VoltAPI.ai.ask()` | `ai` |
+| `VoltAPI.system.*` | `system` |
+| Authenticated service fetches | `network` |
+
 ### Parser Pattern
 
 For complex plugins, separate query parsing from result generation. This is the pattern used by Calculator and Password Generator:

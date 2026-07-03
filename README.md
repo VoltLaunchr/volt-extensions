@@ -10,7 +10,7 @@ templates/          # Starter templates
   rust-plugin/        # Rust backend plugin template
 examples/           # Production-ready example extensions
   password-generator/ # Crypto-secure password generator (EFF Diceware)
-cli/                # volt-plugin CLI tool (init, test, publish)
+cli/                # volt-plugin CLI tool (init, lint, test, publish)
 ```
 
 ## Quick Start
@@ -28,7 +28,7 @@ volt-plugin init my-extension
 cd my-extension
 ```
 
-The CLI prompts for: extension ID, name, description, author, category, permissions, trigger prefix, and keywords. It generates `manifest.json`, `src/index.ts`, `package.json`, `tsconfig.json`, and installs dependencies.
+The CLI prompts for: extension ID, name, description, author, category, permissions, trigger prefix, and keywords. It generates `manifest.json`, `index.ts`, `package.json`, `tsconfig.json`, `eslint.config.js`, `.prettierrc`, and installs dependencies.
 
 ### 3. Link to Volt for testing
 
@@ -47,7 +47,8 @@ Extensions run in a **Web Worker sandbox** with the following restrictions:
   - HTTP redirects blocked
   - `Cookie` / `Authorization` headers stripped
   - Response body capped at 10 MB
-- Only these permissions are accepted by the backend: `clipboard`, `network`, `notifications`, `openUrl`
+- Only these permissions are accepted by Volt: `clipboard`, `network`, `notifications`, `openUrl`, `oauth`, `ai`, `system`
+- Runtime commands are backend-gated by installed/enabled extension state and granted permissions.
 - `installed.json` is HMAC-signed; a mismatch resets all `granted_permissions` (fail-closed)
 
 ## CLI reference
@@ -55,22 +56,27 @@ Extensions run in a **Web Worker sandbox** with the following restrictions:
 | Command | Description |
 |---------|-------------|
 | `volt-plugin init` | Scaffold a new extension with interactive prompts |
-| `volt-plugin test` | Validate manifest, plugin interface, and TypeScript types |
-| `volt-plugin publish` | Package as ZIP and output registry entry JSON |
+| `volt-plugin lint` | Run ESLint for one extension |
+| `volt-plugin test` | Run manifest validation, schema validation, ESLint, TypeScript, and package dry-run |
+| `volt-plugin validate-registry` | Validate `registry.json`, release URLs, and source manifest drift |
+| `volt-plugin publish` | Package as ZIP and generate store submission artifacts |
 
 ## Contributing
 
 1. Fork this repository
 2. Create a branch: `git checkout -b extension/my-extension`
-3. Add your extension under `extensions/`
+3. Add your extension under the current store source folder
 4. Run `volt-plugin test` to validate
-5. Open a Pull Request
+5. Run `volt-plugin publish` to generate the package manifest, checksum, registry patch, and PR body
+6. Run `volt-plugin validate-registry` if you touch `registry.json`
+7. Open a Pull Request
 
-See [Publishing Guide](https://voltlaunchr.dev/docs/plugins/publishing) for the full submission process.
+See [Prepare Extension For Store](docs/prepare-extension-for-store.md) and the [Publishing Guide](docs/publishing.md) for the full submission process.
 
 ## Documentation
 
 - [Plugin Development Guide](https://voltlaunchr.dev/docs/plugins/development)
+- [Prepare Extension For Store](docs/prepare-extension-for-store.md)
 - [API Reference](https://voltlaunchr.dev/docs/plugins/api-reference)
 - [Best Practices](https://voltlaunchr.dev/docs/plugins/best-practices)
 - [Examples](https://voltlaunchr.dev/docs/plugins/examples)

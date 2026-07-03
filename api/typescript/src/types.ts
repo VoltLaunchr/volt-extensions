@@ -92,7 +92,8 @@ export type ExtensionPreferenceType =
   | 'boolean'
   | 'select'
   | 'file'
-  | 'directory';
+  | 'directory'
+  | 'oauth';
 
 export interface ExtensionPreference {
   name: string;
@@ -104,6 +105,11 @@ export interface ExtensionPreference {
   options?: string[];
   min?: number;
   max?: number;
+  oauthProvider?: string;
+  oauthAuthUrl?: string;
+  oauthTokenUrl?: string;
+  oauthClientId?: string;
+  oauthScopes?: string[];
 }
 
 /** A single named command exposed by the extension (multi-command support). */
@@ -117,6 +123,33 @@ export interface ExtensionCommand {
   icon?: string;
 }
 
+export type ExtensionCategory =
+  | 'productivity'
+  | 'utilities'
+  | 'developer'
+  | 'media'
+  | 'social'
+  | 'finance'
+  | 'games'
+  | 'system'
+  | 'other';
+
+export const EXTENSION_PERMISSIONS = [
+  'clipboard',
+  'network',
+  'notifications',
+  'openUrl',
+  'oauth',
+  'ai',
+  'system',
+] as const;
+
+export type ExtensionPermission = (typeof EXTENSION_PERMISSIONS)[number];
+
+export interface ExtensionBackgroundRefresh {
+  interval: string;
+}
+
 export interface ExtensionManifest {
   id: string;
   name: string;
@@ -126,13 +159,142 @@ export interface ExtensionManifest {
   icon?: string;
   keywords?: string[];
   prefix?: string;
-  category?: string;
+  category?: ExtensionCategory;
   repository?: string;
   homepage?: string;
   license?: string;
   minVoltVersion?: string;
-  permissions?: string[];
+  permissions?: ExtensionPermission[];
   main?: string;
   preferences?: ExtensionPreference[];
   commands?: ExtensionCommand[];
+  backgroundRefresh?: ExtensionBackgroundRefresh;
+}
+
+export interface VoltStorageAPI {
+  get(key: string): Promise<string | null>;
+  set(key: string, value: string): Promise<void>;
+  remove(key: string): Promise<void>;
+  clear(): Promise<void>;
+}
+
+export interface VoltOAuthAuthorizeOptions {
+  provider: string;
+  authUrl: string;
+  tokenUrl: string;
+  clientId: string;
+  scopes?: string[];
+}
+
+export interface VoltOAuthResult {
+  token?: string;
+  error?: string;
+  success?: boolean;
+}
+
+export interface VoltOAuthAPI {
+  authorize(opts: VoltOAuthAuthorizeOptions): Promise<VoltOAuthResult>;
+  getToken(provider: string): Promise<VoltOAuthResult>;
+  revokeToken(provider: string): Promise<void>;
+}
+
+export type VoltAICreativity = 'none' | 'low' | 'medium' | 'high' | 'maximum' | number;
+
+export type VoltAIModel =
+  | 'openai:gpt-4o'
+  | 'openai:gpt-4o-mini'
+  | 'openai:gpt-4-turbo'
+  | 'openai:o1'
+  | 'openai:o1-mini'
+  | 'openai:o3-mini'
+  | 'anthropic:claude-opus-4-7'
+  | 'anthropic:claude-sonnet-4-6'
+  | 'anthropic:claude-haiku-4-5-20251001'
+  | 'groq:llama-3.3-70b-versatile'
+  | 'groq:llama-3.1-8b-instant'
+  | 'groq:llama-3.1-70b-versatile'
+  | 'groq:mixtral-8x7b-32768'
+  | (string & Record<never, never>);
+
+export interface VoltAIAskOptions {
+  provider: 'openai' | 'anthropic' | 'groq';
+  apiKeyPreference: string;
+  model?: VoltAIModel;
+  maxTokens?: number;
+  system?: string;
+  creativity?: VoltAICreativity;
+  temperature?: number;
+  history?: Array<{ role: 'user' | 'assistant'; content: string }>;
+  images?: Array<{ mimeType: string; data: string }>;
+  signal?: AbortSignal;
+}
+
+export interface VoltAIAPI {
+  ask(prompt: string, options: VoltAIAskOptions, onChunk?: (chunk: string) => void): Promise<string>;
+}
+
+export interface VoltSecretsAPI {
+  get(key: string): Promise<string | null>;
+  set(key: string, value: string): Promise<void>;
+  delete(key: string): Promise<void>;
+}
+
+export interface AppInfo {
+  id: string;
+  name: string;
+  path: string;
+  icon?: string | null;
+  description?: string | null;
+}
+
+export interface VoltSystemAPI {
+  getApplications(): Promise<AppInfo[]>;
+  showInFolder(path: string): Promise<void>;
+  moveToTrash(path: string): Promise<void>;
+}
+
+export interface ToastOptions {
+  message: string;
+  title?: string;
+  subtitle?: string;
+  style?: 'info' | 'success' | 'error';
+  duration?: number;
+}
+
+export interface VoltAPIInterface {
+  types: {
+    PluginResultType: typeof PluginResultType;
+  };
+  utils: {
+    fuzzyScore(query: string, target: string): number;
+    copyToClipboard(text: string): Promise<boolean>;
+    openUrl(url: string): Promise<void>;
+    pasteText(text: string): void;
+    formatNumber(num: number): string;
+  };
+  storage: VoltStorageAPI;
+  secrets: VoltSecretsAPI;
+  oauth: VoltOAuthAPI;
+  ai: VoltAIAPI;
+  system: VoltSystemAPI;
+  captureException(
+    error: Error | string,
+    context?: Record<string, unknown>,
+    severity?: 'error' | 'warning'
+  ): void;
+  notify(message: string, type?: 'info' | 'success' | 'error'): void;
+  showToast(opts: ToastOptions): void;
+  showHUD(message: string): void;
+  confirm(message: string): Promise<boolean>;
+  updateCommandMetadata(opts: { title?: string; subtitle?: string }): void;
+}
+
+declare global {
+  interface Window {
+    VoltAPI?: VoltAPIInterface;
+  }
+
+  // Worker extensions access VoltAPI through globalThis.
+  // eslint-disable-next-line no-var
+  var VoltAPI: VoltAPIInterface | undefined;
 }

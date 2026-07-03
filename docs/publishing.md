@@ -7,6 +7,7 @@ Share your plugin with the Volt community.
 - Working plugin tested locally (see [Dev Workflow](dev-workflow.md))
 - GitHub account
 - README.md for your plugin
+- Completed [Prepare Extension For Store](prepare-extension-for-store.md) checklist
 
 ## Submission Process
 
@@ -37,6 +38,14 @@ Include:
 
 ### 4. Submit a PR
 
+Before opening the PR:
+
+```bash
+volt-plugin lint
+volt-plugin test
+volt-plugin publish
+```
+
 ```bash
 git checkout -b add-your-plugin-name
 git add .
@@ -45,6 +54,10 @@ git push origin add-your-plugin-name
 ```
 
 Then create a Pull Request on GitHub.
+
+Use `.volt-publish/{id}-v{version}/pull-request-body.md` as the PR body
+starter, and attach or paste `.volt-publish/{id}-v{version}/submission.json`
+when maintainers ask for the machine-readable submission payload.
 
 ## Guidelines
 
@@ -63,11 +76,12 @@ Then create a Pull Request on GitHub.
 - Use excessive system resources
 - Violate third-party Terms of Service
 
-## Creating a Release
+## Store Submission Artifacts
 
-Once your extension is ready, create a GitHub release with the packaged extension.
+`volt-plugin publish` creates a review packet locally. It does not publish the
+extension directly and does not require contributors to create GitHub releases.
 
-### 1. Package your extension
+### 1. Generate the submission
 
 Using the CLI tool:
 
@@ -76,44 +90,42 @@ cd your-extension
 volt-plugin publish
 ```
 
-Or manually create a `.zip` file containing your extension files (manifest.json, plugin files, assets).
+Generated files:
 
-### 2. Create a GitHub release
-
-- Go to your repository's Releases page
-- Click "Create a new release"
-- Create a tag following the format: `{extension-id}-v{version}` (e.g., `password-generator-v1.0.0`)
-- Upload your `.zip` file as a release asset
-
-### 3. Update registry.json
-
-Add your extension to `registry.json` with the correct `downloadUrl` pointing to your release:
-
-```json
-{
-  "manifest": {
-    "id": "your-extension-id",
-    "name": "Your Extension",
-    "version": "1.0.0"
-  },
-  "downloadUrl": "https://github.com/{owner}/{repo}/releases/download/{tag}/{filename}.zip"
-}
+```text
+.volt-publish/{id}-v{version}/
+├── artifacts/{id}-v{version}.zip
+├── package-manifest.json
+├── pull-request-body.md
+├── registry-entry.json
+├── registry-patch.json
+└── submission.json
 ```
 
-Example URL:
+### 2. What reviewers check
 
-```
-https://github.com/VoltLaunchr/volt-extensions/releases/download/password-generator-v1.0.4/password-generator-v1.0.4.zip
-```
+- `package-manifest.json` lists every packaged file and the archive SHA-256.
+- `registry-patch.json` is the proposed registry upsert.
+- `submission.json` combines source path, package data, registry patch, and PR
+  review checklist.
+- `pull-request-body.md` gives contributors a PR description template.
 
-The `downloadUrl` must point to a valid GitHub release asset. Volt uses this URL to download and install extensions.
+### 3. Release ownership
+
+Maintainers publish release assets after review and merge. Registry entries must
+continue to point to Volt-owned release assets under:
+
+```text
+https://github.com/VoltLaunchr/volt-extensions/releases/download/{id}-v{version}/{id}-v{version}.zip
+```
 
 ## Review Process
 
 1. Automated checks run on the PR
-2. Maintainer reviews code and security
+2. Maintainer reviews code, metadata, permissions, package manifest, and checksum
 3. Feedback provided if needed
-4. Merged and published to the extension store
+4. Merged to the store source branch
+5. Release workflow publishes the archive and updates the extension store
 
 ## Need Help?
 

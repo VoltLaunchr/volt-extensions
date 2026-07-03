@@ -23,6 +23,8 @@ Describe how to use your plugin.
 
 ```bash
 npm run watch  # Watch for changes
+npm run lint   # Run ESLint
+npm test       # Run Volt validation, ESLint, TypeScript, and package dry-run
 npm run build  # Build for production
 ```
 

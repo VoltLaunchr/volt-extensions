@@ -1,4 +1,5 @@
 {
+  "$schema": "https://voltlauncher.com/schemas/manifest.json",
   "id": "my-plugin",
   "name": "My Plugin",
   "version": "1.0.0",

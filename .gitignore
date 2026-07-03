@@ -62,6 +62,18 @@ web_modules/
 # Output of 'npm pack'
 *.tgz
 
+# Volt extension submission artifacts
+**/.volt-publish/
+**/.volt-store/
+plugins/**/*.zip
+plugins/**/*.tar.gz
+examples/**/*.zip
+examples/**/*.tar.gz
+community/**/*.zip
+community/**/*.tar.gz
+extensions/**/*.zip
+extensions/**/*.tar.gz
+
 # Yarn Integrity file
 .yarn-integrity
 

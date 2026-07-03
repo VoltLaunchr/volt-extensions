@@ -176,6 +176,9 @@ Every extension requires a `manifest.json`:
 | `homepage` | No | URL to the extension's homepage or documentation |
 | `license` | No | License identifier (e.g., `MIT`) |
 
+Supported permissions: `clipboard`, `network`, `notifications`, `openUrl`, `oauth`, `ai`, `system`.
+Volt validates these permissions at install/consent time and the runtime backend re-checks them for sensitive `ext_*` commands.
+
 ## Best Practices
 
 ### Performance

@@ -1,7 +1,7 @@
 {
   "id": "github",
   "name": "GitHub",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Search GitHub repositories, issues, pull requests, and gists",
   "author": {
     "name": "VoltLaunchr Community",
