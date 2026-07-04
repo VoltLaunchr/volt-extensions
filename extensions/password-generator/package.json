@@ -1,0 +1,32 @@
+{
+  "name": "volt-extension-password-generator",
+  "version": "1.0.4",
+  "description": "Generate cryptographically secure passwords using NIST standards and EFF Diceware wordlists",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint .",
+    "test": "volt-plugin test"
+  },
+  "keywords": [
+    "volt",
+    "extension",
+    "password",
+    "security"
+  ],
+  "author": "VoltLaunchr Community",
+  "license": "MIT",
+  "dependencies": {
+    "@voltlaunchrr/plugin-api": "^0.1.0",
+    "react": "^18.2.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.2.0",
+    "@voltlaunchrr/plugin-cli": "^0.1.0",
+    "eslint": "^9.0.0",
+    "typescript": "^5.3.3",
+    "typescript-eslint": "^8.0.0"
+  }
+}

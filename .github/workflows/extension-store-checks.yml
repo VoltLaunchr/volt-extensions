@@ -23,16 +23,16 @@ jobs:
           node-version: 20
 
       - name: Install CLI dependencies
-        run: npm ci --prefix cli
+        run: npm ci --prefix packages/cli
 
       - name: Test CLI
-        run: npm test --prefix cli
+        run: npm test --prefix packages/cli
 
       - name: Build CLI
-        run: npm run build --prefix cli
+        run: npm run build --prefix packages/cli
 
       - name: Validate registry
-        run: npm run validate:registry --prefix cli
+        run: npm run validate:registry --prefix packages/cli
 
       - name: Detect changed extensions
         run: node scripts/changed-extensions.mjs > changed-extensions.txt
@@ -52,12 +52,12 @@ jobs:
             elif [ -f "${dir}/package.json" ]; then
               npm install --prefix "${dir}"
             fi
-            node cli/dist/index.js test --dir "${dir}"
+            node packages/cli/dist/index.js test --dir "${dir}"
             echo "::endgroup::"
           done < changed-extensions.txt
 
       - name: Install TypeScript API dependencies
-        run: npm ci --prefix api/typescript
+        run: npm ci --prefix packages/api/typescript
 
       - name: Build TypeScript API
-        run: npm run build --prefix api/typescript
+        run: npm run build --prefix packages/api/typescript

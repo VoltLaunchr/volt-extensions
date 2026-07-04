@@ -192,4 +192,4 @@ When your extension is ready:
 |---------|-----------|-------------|
 | [Web Search](../examples/websearch/) | Simple | Single-file, prefix-based triggers |
 | [Calculator](../examples/calculator/) | Complex | Multi-handler, parser pattern, React component |
-| [Password Generator](../examples/password-generator/) | Medium | Crypto-secure generation, multiple modes |
+| [Password Generator](../extensions/password-generator/) | Medium | Crypto-secure generation, multiple modes |

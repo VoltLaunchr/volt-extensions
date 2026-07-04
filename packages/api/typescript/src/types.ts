@@ -29,6 +29,33 @@ export enum PluginResultType {
   Emoji = 'emoji',
   Info = 'info',
   Password = 'password',
+  ShellCommand = 'shellcommand',
+  GridItem = 'grid',
+  AiChat = 'aichat',
+}
+
+export type PluginActivationMode = 'declarative' | 'always' | 'custom';
+export type ActivationKind = 'prefix' | 'keyword' | 'always' | 'none';
+
+export interface PluginActivation {
+  prefixes?: string[];
+  keywords?: string[];
+  mode?: PluginActivationMode;
+  minLength?: number;
+}
+
+export interface ActivationMatch {
+  matched: boolean;
+  kind: ActivationKind;
+  stripped: string;
+  token?: string;
+}
+
+export interface PluginResultAccessory {
+  icon?: string;
+  text?: string;
+  color?: string;
+  tag?: boolean;
 }
 
 export interface PluginResult {
@@ -42,11 +69,16 @@ export interface PluginResult {
   data?: Record<string, unknown>;
   pluginId?: string; // ID of the plugin that created this result
   actions?: PluginResultAction[];
+  accessories?: PluginResultAccessory[];
+  section?: string;
+  layout?: 'grid';
+  matchKind?: ActivationKind;
 }
 
 export interface PluginContext {
   query: string;
   settings?: Record<string, unknown>;
+  activation?: ActivationMatch;
 }
 
 export interface Plugin {
@@ -54,6 +86,7 @@ export interface Plugin {
   name: string;
   description: string;
   enabled: boolean;
+  activation?: PluginActivation;
 
   /**
    * Test if this plugin should handle the query
@@ -199,6 +232,7 @@ export interface VoltOAuthAPI {
 }
 
 export type VoltAICreativity = 'none' | 'low' | 'medium' | 'high' | 'maximum' | number;
+export type VoltAIProvider = 'openai' | 'anthropic' | 'groq' | 'huggingface';
 
 export type VoltAIModel =
   | 'openai:gpt-4o'
@@ -207,25 +241,40 @@ export type VoltAIModel =
   | 'openai:o1'
   | 'openai:o1-mini'
   | 'openai:o3-mini'
-  | 'anthropic:claude-opus-4-7'
+  | 'anthropic:claude-opus-4-8'
   | 'anthropic:claude-sonnet-4-6'
   | 'anthropic:claude-haiku-4-5-20251001'
   | 'groq:llama-3.3-70b-versatile'
   | 'groq:llama-3.1-8b-instant'
   | 'groq:llama-3.1-70b-versatile'
   | 'groq:mixtral-8x7b-32768'
+  | 'huggingface:openai/gpt-oss-20b'
   | (string & Record<never, never>);
 
+export type VoltAIChatContentPart =
+  | { type: 'text'; text: string }
+  | { type: 'image'; mediaType: string; data: string };
+
+export interface VoltAIChatTurn {
+  role: 'user' | 'assistant';
+  content: VoltAIChatContentPart[];
+}
+
+export interface VoltAIImagePart {
+  mediaType: string;
+  data: string;
+}
+
 export interface VoltAIAskOptions {
-  provider: 'openai' | 'anthropic' | 'groq';
+  provider: VoltAIProvider;
   apiKeyPreference: string;
   model?: VoltAIModel;
   maxTokens?: number;
   system?: string;
   creativity?: VoltAICreativity;
   temperature?: number;
-  history?: Array<{ role: 'user' | 'assistant'; content: string }>;
-  images?: Array<{ mimeType: string; data: string }>;
+  history?: VoltAIChatTurn[];
+  images?: VoltAIImagePart[];
   signal?: AbortSignal;
 }
 
@@ -273,10 +322,18 @@ export interface VoltAPIInterface {
     formatNumber(num: number): string;
   };
   storage: VoltStorageAPI;
+  events: {
+    emit(event: string, payload?: unknown): void;
+    on(event: string, handler: (payload: unknown) => void): () => void;
+  };
+  getPreference<T = unknown>(key: string, defaultValue?: T): Promise<T | null>;
+  setPreference(key: string, value: string | number | boolean): Promise<void>;
   secrets: VoltSecretsAPI;
   oauth: VoltOAuthAPI;
   ai: VoltAIAPI;
   system: VoltSystemAPI;
+  saveCredential(service: string, token: string): void;
+  fetch(url: string, options?: RequestInit): Promise<Response>;
   captureException(
     error: Error | string,
     context?: Record<string, unknown>,

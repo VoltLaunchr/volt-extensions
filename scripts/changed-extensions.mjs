@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 
-const EXTENSION_ROOTS = new Set(['extensions', 'plugins', 'community', 'examples']);
+const EXTENSION_ROOTS = new Set(['extensions', 'community', 'examples', 'plugins']);
 
 function git(args) {
   return execFileSync('git', args, {
@@ -18,6 +18,7 @@ function changedFiles() {
   const candidates = [];
   if (baseRef) candidates.push(['diff', '--name-only', `origin/${baseRef}...HEAD`]);
   if (before && !/^0+$/.test(before)) candidates.push(['diff', '--name-only', `${before}...HEAD`]);
+  candidates.push(['diff', '--name-only', 'HEAD']);
   candidates.push(['diff', '--name-only', 'HEAD~1...HEAD']);
   candidates.push(['ls-files']);
 

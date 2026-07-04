@@ -102,6 +102,9 @@ enum PluginResultType {
   Emoji = 'emoji',
   Info = 'info',
   Password = 'password',
+  ShellCommand = 'shellcommand',
+  GridItem = 'grid',
+  AiChat = 'aichat',
 }
 ```
 
@@ -128,9 +131,9 @@ Key behavior:
 
 ## Plugin Lifecycle
 
-1. **Registration**: Plugin is registered via `registry.register(plugin)`
-2. **Query routing**: On each user keystroke (after 150ms debounce), `canHandle()` is called on all enabled plugins
-3. **Result generation**: For plugins that return `true`, `match()` is called (max 500ms)
+1. **Registration**: Volt loads the extension manifest and registers one Worker plugin per command when `commands[]` is present.
+2. **Query routing**: External extensions are routed by manifest `keywords`, `prefix`, or command triggers before Worker code runs.
+3. **Result generation**: For routed extensions, `match()` is called in the Worker.
 4. **Display**: Results are ranked by score and displayed in the UI
 5. **Execution**: When user selects a result, `execute()` is called on the owning plugin
 
@@ -172,6 +175,8 @@ Every extension requires a `manifest.json`:
 | `minVoltVersion` | No | Minimum Volt version required |
 | `permissions` | No | Required permissions (e.g., `clipboard`) |
 | `files` | No | Files to include in the packaged extension |
+| `commands` | No | Named sub-commands, each with `name`, `title`, optional `main`, and its own `prefix` or `keywords` |
+| `backgroundRefresh` | No | Optional cache refresh interval such as `30s`, `5m`, or `1h` |
 | `repository` | No | URL to the extension's source repository |
 | `homepage` | No | URL to the extension's homepage or documentation |
 | `license` | No | License identifier (e.g., `MIT`) |
@@ -183,7 +188,7 @@ Volt validates these permissions at install/consent time and the runtime backend
 
 ### Performance
 
-- Keep `canHandle()` fast (< 1ms) - it's called on **every** keystroke for **all** plugins
+- Put routing in `manifest.json` `keywords`, `prefix`, or `commands[]`; Worker code should not run for unrelated queries
 - Cache expensive computations between queries
 - Use async operations for network/IO-bound work
 - Limit results to 5-10 items per plugin

@@ -5,12 +5,17 @@ Official community extensions repository for [Volt](https://github.com/VoltLaunc
 ## Structure
 
 ```
-templates/          # Starter templates
-  typescript-plugin/  # TypeScript extension template
-  rust-plugin/        # Rust backend plugin template
-examples/           # Production-ready example extensions
-  password-generator/ # Crypto-secure password generator (EFF Diceware)
-cli/                # volt-plugin CLI tool (init, lint, test, publish)
+extensions/             # Official store extensions
+  github/               # GitHub search and issue/PR actions
+  notion/               # Notion workspace search
+  password-generator/   # Crypto-secure password generator (EFF Diceware)
+packages/
+  api/                  # TypeScript and Rust extension APIs
+  cli/                  # volt-plugin CLI tool (init, lint, test, publish)
+schemas/                # Manifest and registry JSON schemas
+templates/              # Starter templates
+examples/               # Educational sample extensions
+scripts/                # Store maintenance scripts
 ```
 
 ## Quick Start
@@ -65,7 +70,7 @@ Extensions run in a **Web Worker sandbox** with the following restrictions:
 
 1. Fork this repository
 2. Create a branch: `git checkout -b extension/my-extension`
-3. Add your extension under the current store source folder
+3. Add your extension under `extensions/`
 4. Run `volt-plugin test` to validate
 5. Run `volt-plugin publish` to generate the package manifest, checksum, registry patch, and PR body
 6. Run `volt-plugin validate-registry` if you touch `registry.json`

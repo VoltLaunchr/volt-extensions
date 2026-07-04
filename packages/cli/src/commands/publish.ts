@@ -188,7 +188,7 @@ export async function publishCommand(options: PublishOptions = {}): Promise<void
   // 5. Instructions
   console.log('');
   log.heading('Next steps');
-  console.log(`  1. Commit the extension source under the store source directory.`);
+  console.log(`  1. Commit the extension source under extensions/.`);
   console.log(`  2. Include or attach ${log.bold(rel(join(submissionDir, 'submission.json')))} in the PR.`);
   console.log(`  3. Maintainers review the source, registry patch, package manifest, and checksum.`);
   console.log(`  4. After merge, the release workflow publishes ${log.bold(basename(pkg.outputPath))}.`);

@@ -24,8 +24,7 @@ function toPascalCase(kebab: string): string {
 }
 
 function resolveTemplatePath(): string {
-  // When running from source (dev): cli/src/utils/ → cli/ → templates/typescript-plugin/
-  // When running from dist: cli/dist/utils/ → cli/ → templates/typescript-plugin/
+  // Resolve both source and built package layouts under packages/cli.
   const candidates = [
     join(__dirname, '..', '..', '..', 'templates', 'typescript-plugin'),
     join(__dirname, '..', '..', 'templates', 'typescript-plugin'),

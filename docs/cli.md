@@ -15,7 +15,7 @@ npm install -g @voltlaunchrr/plugin-cli
 Or run directly from the repository:
 
 ```bash
-cd cli
+cd packages/cli
 npm install
 npm run build
 node bin/volt-plugin.mjs <command>
@@ -71,7 +71,7 @@ volt-plugin lint
 For CI or monorepo usage:
 
 ```bash
-volt-plugin lint --dir plugins/github
+volt-plugin lint --dir extensions/github
 ```
 
 `volt-plugin lint` delegates to the extension's local ESLint configuration. Volt-specific rules should live in the dedicated ESLint plugin/config package and be imported from `eslint.config.js`.
@@ -88,7 +88,7 @@ volt-plugin test
 For CI or monorepo usage:
 
 ```bash
-volt-plugin test --dir plugins/github
+volt-plugin test --dir extensions/github
 ```
 
 Runs checks in sequence:
@@ -114,7 +114,7 @@ volt-plugin publish
 For CI or monorepo usage:
 
 ```bash
-volt-plugin publish --dir plugins/github --out-dir .volt-publish/github-v1.2.1
+volt-plugin publish --dir extensions/github --out-dir .volt-publish/github-v1.2.1
 ```
 
 Steps performed:
@@ -141,7 +141,7 @@ Generated files:
 Review flow:
 
 ```
-1. Commit the extension source under the store source directory.
+1. Commit the extension source under `extensions/`.
 2. Include or attach submission.json in the PR.
 3. Maintainers review the source, registry patch, package manifest, and checksum.
 4. After merge, the release workflow publishes the archive.
@@ -160,7 +160,7 @@ Checks performed:
 1. Validates `registry.json` against `schemas/registry.schema.json`
 2. Verifies release URLs use the `{id}-v{version}` tag and a supported archive format
 3. Rejects duplicate extension IDs
-4. Compares registry manifests with local source manifests under `plugins/`, `extensions/`, `community/`, and `examples/`
+4. Compares registry manifests with local source manifests under `extensions/`, `community/`, `examples/`, and legacy `plugins/`
 
 ## Manifest Reference
 
@@ -176,7 +176,15 @@ Checks performed:
   "keywords": ["trigger", "words"],
   "prefix": "mp",
   "permissions": ["clipboard"],
-  "files": ["index.ts"]
+  "commands": [
+    {
+      "name": "search",
+      "title": "Search",
+      "prefix": "mp"
+    }
+  ],
+  "backgroundRefresh": { "interval": "5m" },
+  "files": ["index.ts", "manifest.json"]
 }
 ```
 
@@ -199,7 +207,7 @@ Checks performed:
 ## Development
 
 ```bash
-cd cli
+cd packages/cli
 npm install
 npm run build     # Compile TypeScript
 npm test          # Run test suite

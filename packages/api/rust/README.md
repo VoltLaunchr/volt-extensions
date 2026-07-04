@@ -66,5 +66,5 @@ registry.initialize_all().await?;
 
 ## Documentation
 
-- [Rust API Guide](../../docs/rust-api.md)
-- [Plugin API Reference](../../docs/plugin-api.md)
+- [Rust API Guide](../../../docs/rust-api.md)
+- [Plugin API Reference](../../../docs/plugin-api.md)

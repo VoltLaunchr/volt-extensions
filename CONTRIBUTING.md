@@ -8,7 +8,7 @@ Thank you for your interest in contributing to the Volt Extensions ecosystem!
 
 1. Fork this repository
 2. Create a new branch: `git checkout -b my-extension`
-3. Add your extension in `examples/your-extension-name/`
+3. Add your extension in `extensions/your-extension-name/`
 4. Follow the structure in `templates/` for guidance
 5. Update `registry.json` with your extension metadata
 6. Submit a Pull Request
@@ -36,7 +36,7 @@ Thank you for your interest in contributing to the Volt Extensions ecosystem!
 - TypeScript with strict types
 - Use the Volt Plugin API (`VoltAPI`) for system interactions
 - No direct filesystem or network access without declared permissions
-- Follow existing extension patterns in `examples/`
+- Follow existing extension patterns in `extensions/` and the smaller educational samples in `examples/`
 
 ## Review Process
 

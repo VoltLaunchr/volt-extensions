@@ -18,7 +18,8 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/VoltLaunchr/volt-extensions"
+    "url": "https://github.com/VoltLaunchr/volt-extensions",
+    "directory": "packages/api/typescript"
   },
   "devDependencies": {
     "typescript": "^5.3.3"

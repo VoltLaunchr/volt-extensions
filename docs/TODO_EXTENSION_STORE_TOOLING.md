@@ -11,9 +11,9 @@ with Volt's actual runtime and backend permission model.
 - Sensitive runtime APIs are now backend-gated in Volt-public by extension
   existence, enabled state, and granted permissions.
 - `volt-extensions` currently has a working CLI, schema, docs, examples, and
-  public plugins, but the contribution guardrails are still thin compared with
-  a large public extension store.
-- Existing public plugins do not need new permissions for the backend hardening:
+  public extensions, but the contribution guardrails are still thin compared
+  with a large public extension store.
+- Existing public extensions do not need new permissions for the backend hardening:
   `github` uses `network`/`openUrl`, `notion` uses `network`, and
   `password-generator` uses `clipboard`.
 
@@ -44,14 +44,13 @@ with Volt's actual runtime and backend permission model.
     `screenshots`, `readmeUrl`, checksums, and source/package consistency.
 - [x] Fail CI on registry/source drift.
   - Fixed local drift where `registry.json` listed `github` as `1.2.1`, while
-    `plugins/github/manifest.json` listed `1.2.0`.
+    `extensions/github/manifest.json` listed `1.2.0`.
   - The validator should compare every registry manifest against the packaged
     source manifest or explicitly allow released-only entries.
-- [ ] Decide and enforce one canonical extension directory.
-  - Current docs reference `extensions/`, `community/`, and `examples/`, while
-    shipped public extensions live in `plugins/`.
-  - Default proposal: migrate public store entries to `extensions/`, keep
-    `examples/` for educational fixtures.
+- [x] Decide and enforce one canonical extension directory.
+  - Public store entries now live under `extensions/`.
+  - `examples/` is reserved for educational fixtures.
+  - Validators still tolerate legacy `plugins/` paths during migration.
 - [ ] Standardize artifact format.
   - CLI generates `{id}-v{version}.zip`.
   - Current registry has `.tar.gz` for GitHub/Notion and `.zip` for
@@ -118,9 +117,9 @@ Status: in progress.
 
 Acceptance:
 
-- `npm test` passes in `cli/`.
-- `npm run build` passes in `cli/`.
-- `npm run build` passes in `api/typescript/`.
+- `npm test` passes in `packages/cli/`.
+- `npm run build` passes in `packages/cli/`.
+- `npm run build` passes in `packages/api/typescript/`.
 - A manifest using `oauth`, `ai`, `system`, `openUrl`, and OAuth preferences
   passes schema validation.
 
@@ -187,8 +186,8 @@ Rule test fixtures:
 - [ ] Secret-like value written to storage.
 - [ ] `moveToTrash` without `VoltAPI.confirm` warns.
 - [ ] `openUrl(context.query)` warns; validated URL passes.
-- [ ] Real fixture calibration against `plugins/github`, `plugins/notion`, and
-  `examples/password-generator`.
+- [ ] Real fixture calibration against `extensions/github`,
+  `extensions/notion`, and `extensions/password-generator`.
 
 False-positive guardrails:
 
@@ -230,14 +229,16 @@ Acceptance:
 
 - Fresh `volt-plugin init` project can run `npm run lint`, `npm run build`, and
   `volt-plugin test`.
-- Existing examples and plugins pass or have documented, intentional warnings.
+- Existing examples and official extensions pass or have documented,
+  intentional warnings.
 
 ## Phase 3 - Store Repository Hardening
 
-- [ ] Decide final repo layout:
-  - Keep `plugins/` or migrate to `extensions/`.
-  - Move packages into `packages/api`, `packages/cli`,
-    `packages/eslint-plugin` if adopting a workspace.
+- [x] Decide final repo layout:
+  - Public store extensions live in `extensions/`.
+  - Tooling packages live in `packages/api` and `packages/cli`.
+  - `packages/eslint-plugin` remains future work because the ESLint plugin is
+    tracked as a separate package/repository decision.
 - [x] Add changed-extension CI:
   - detect changed extension folders
   - validate manifests
@@ -302,14 +303,14 @@ Run from `D:\dev\_ecosystems\volt\volt-extensions`:
 node -e "JSON.parse(require('fs').readFileSync('schemas/manifest.schema.json','utf8')); console.log('schema ok')"
 ```
 
-Run from `D:\dev\_ecosystems\volt\volt-extensions\cli`:
+Run from `D:\dev\_ecosystems\volt\volt-extensions\packages\cli`:
 
 ```powershell
 npm test
 npm run build
 ```
 
-Run from `D:\dev\_ecosystems\volt\volt-extensions\api\typescript`:
+Run from `D:\dev\_ecosystems\volt\volt-extensions\packages\api\typescript`:
 
 ```powershell
 npm run build
