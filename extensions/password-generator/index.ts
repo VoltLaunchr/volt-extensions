@@ -13,7 +13,7 @@ import {
   PluginContext,
   PluginResult,
   PluginResultType,
-} from '../../api/typescript/src/types';
+} from '@voltlaunchrr/plugin-api';
 import { isPasswordQuery, parsePasswordQuery } from './parsers/queryParser';
 import { generate } from './utils/generator';
 import { formatEntropy, estimateCrackTime, calculateStrength } from './utils/strength';

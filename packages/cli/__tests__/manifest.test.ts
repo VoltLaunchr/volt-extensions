@@ -141,7 +141,7 @@ describe('validateManifest', () => {
     expect(result.errors.some((e) => e.includes('keywords'))).toBe(true);
   });
 
-  it('passes when optional fields are omitted', async () => {
+  it('fails when no trigger or commands are declared', async () => {
     const m = {
       id: 'minimal-plugin',
       name: 'Minimal',
@@ -152,6 +152,91 @@ describe('validateManifest', () => {
     };
     writeManifest(TEST_DIR, m);
     const result = await validateManifest(TEST_DIR);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some((e) => e.includes('keywords'))).toBe(true);
+  });
+
+  it('passes for a command-only manifest with command prefix', async () => {
+    const m = {
+      id: 'command-only',
+      name: 'Command Only',
+      version: '1.0.0',
+      description: 'Command-only extension',
+      author: { name: 'Author' },
+      main: 'index.ts',
+      commands: [
+        {
+          name: 'search-docs',
+          title: 'Search Docs',
+          prefix: 'docs',
+          main: 'src/search.ts',
+        },
+      ],
+    };
+    mkdirSync(join(TEST_DIR, 'src'), { recursive: true });
+    writeFileSync(join(TEST_DIR, 'src', 'search.ts'), 'export default {}');
+    writeManifest(TEST_DIR, m);
+
+    const result = await validateManifest(TEST_DIR);
+
     expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+  });
+
+  it('fails when command entry point does not exist', async () => {
+    const m = validManifest();
+    m.commands = [
+      {
+        name: 'missing-command',
+        title: 'Missing Command',
+        prefix: 'missing',
+        main: 'src/missing.ts',
+      },
+    ];
+    writeManifest(TEST_DIR, m);
+
+    const result = await validateManifest(TEST_DIR);
+
+    expect(result.valid).toBe(false);
+    expect(result.errors.some((e) => e.includes('commands[0].main'))).toBe(true);
+  });
+
+  it('fails when command has no effective trigger', async () => {
+    const m = validManifest();
+    delete m.keywords;
+    delete m.prefix;
+    m.commands = [
+      {
+        name: 'untriggered',
+        title: 'Untriggered',
+      },
+    ];
+    writeManifest(TEST_DIR, m);
+
+    const result = await validateManifest(TEST_DIR);
+
+    expect(result.valid).toBe(false);
+    expect(result.errors.some((e) => e.includes('commands[0]'))).toBe(true);
+  });
+
+  it('fails when files omits a command entry point', async () => {
+    const m = validManifest();
+    m.commands = [
+      {
+        name: 'search-docs',
+        title: 'Search Docs',
+        prefix: 'docs',
+        main: 'src/search.ts',
+      },
+    ];
+    m.files = ['manifest.json', 'index.ts'];
+    mkdirSync(join(TEST_DIR, 'src'), { recursive: true });
+    writeFileSync(join(TEST_DIR, 'src', 'search.ts'), 'export default {}');
+    writeManifest(TEST_DIR, m);
+
+    const result = await validateManifest(TEST_DIR);
+
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContain('Entry point "src/search.ts" must be included by "files"');
   });
 });

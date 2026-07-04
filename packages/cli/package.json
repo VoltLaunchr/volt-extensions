@@ -34,6 +34,6 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/VoltLaunchr/volt-extensions.git",
-    "directory": "cli"
+    "directory": "packages/cli"
   }
 }

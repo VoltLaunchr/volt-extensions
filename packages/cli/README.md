@@ -24,4 +24,4 @@ volt-plugin publish              # Package and generate registry entry
 
 ## Full Documentation
 
-See [docs/cli.md](../docs/cli.md) for the complete reference including manifest format, categories, permissions, and development setup.
+See [docs/cli.md](../../docs/cli.md) for the complete reference including manifest format, categories, permissions, and development setup.

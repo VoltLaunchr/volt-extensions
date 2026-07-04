@@ -179,17 +179,14 @@ export const MyPluginView: React.FC<{ result: PluginResult }> = ({ result }) => 
 
 ### Volt Runtime API
 
-Extensions can access Volt's runtime utilities through `window.VoltAPI`:
+Extensions can access Volt's runtime utilities through the Worker global `VoltAPI`:
 
 ```typescript
 async execute(result: PluginResult): Promise<void> {
   const password = result.data?.password as string;
 
   // Clipboard access (requires "clipboard" permission in manifest)
-  const copyToClipboard = (window as any).VoltAPI?.utils?.copyToClipboard;
-  if (copyToClipboard) {
-    await copyToClipboard(password);
-  }
+  VoltAPI.utils.copyToClipboard(password);
 }
 ```
 
@@ -198,10 +195,11 @@ Runtime APIs with backend permission gates:
 | API | Permission |
 |-----|------------|
 | `VoltAPI.storage.*` | Enabled extension only |
+| `VoltAPI.secrets.*` | Enabled extension only |
 | `VoltAPI.oauth.*` | `oauth` |
 | `VoltAPI.ai.ask()` | `ai` |
 | `VoltAPI.system.*` | `system` |
-| Authenticated service fetches | `network` |
+| `VoltAPI.fetch()` and authenticated service fetches | `network` |
 
 ### Parser Pattern
 
@@ -213,10 +211,6 @@ export function detectQueryType(query: string): QueryType | null { ... }
 export function parseQuery(query: string): ParsedQuery | null { ... }
 
 // index.ts
-canHandle(context: PluginContext): boolean {
-  return detectQueryType(context.query.trim()) !== null;
-}
-
 match(context: PluginContext): PluginResult[] | null {
   const parsed = parseQuery(context.query.trim());
   if (!parsed) return null;

@@ -121,6 +121,6 @@ npm install @voltlaunchrr/plugin-api
 - Check the [Plugin API Reference](plugin-api.md) for full interface documentation
 - Explore working examples:
   - [Calculator](../examples/calculator/) - Math, units, dates, timezones (complex plugin)
-  - [Password Generator](../examples/password-generator/) - Crypto-secure passwords (security-focused)
+  - [Password Generator](../extensions/password-generator/) - Crypto-secure passwords (security-focused)
   - [Web Search](../examples/websearch/) - Multi-engine web search (simple plugin)
 - Learn about [Publishing](publishing.md) when ready to share

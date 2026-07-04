@@ -17,7 +17,7 @@ interface RegistryFile {
   extensions?: RegistryEntry[];
 }
 
-const SOURCE_DIRS = ['plugins', 'extensions', 'community', 'examples'];
+const SOURCE_DIRS = ['extensions', 'community', 'examples', 'plugins'];
 
 const DRIFT_KEYS = [
   'name',

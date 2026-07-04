@@ -11,7 +11,7 @@ The Rust plugin API provides two main components:
 - **`VoltPluginAPI`** - The API surface exposed to plugins (file paths, state, caching)
 - **`PluginRegistry`** - Thread-safe registry for managing backend plugins (`Arc<RwLock<HashMap>>`)
 
-Source code: [`api/rust/src/`](../api/rust/src/)
+Source code: [`packages/api/rust/src/`](../packages/api/rust/src/)
 
 ## Installation
 

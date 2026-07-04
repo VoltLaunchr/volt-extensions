@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { preparePackageFiles } from './packaging.js';
 import {
   VALID_CATEGORIES,
   VALID_PERMISSIONS,
@@ -12,6 +13,32 @@ export interface ManifestValidationResult {
   valid: boolean;
   errors: string[];
   manifest: Record<string, unknown> | null;
+}
+
+function hasNonEmptyStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.length > 0 && value.every((item) => typeof item === 'string' && item.length > 0);
+}
+
+function normalizePackagePath(value: string): string {
+  return value.replace(/\\/g, '/').replace(/^\.\/+/, '');
+}
+
+function validateEntrypoint(
+  dir: string,
+  entrypoint: unknown,
+  label: string,
+  errors: string[]
+): string | null {
+  if (!entrypoint || typeof entrypoint !== 'string') {
+    errors.push(`Missing required field: "${label}" (entry point file)`);
+    return null;
+  }
+
+  const entryPath = join(dir, entrypoint);
+  if (!existsSync(entryPath)) {
+    errors.push(`Entry point file not found for "${label}": "${entrypoint}" (resolved to ${entryPath})`);
+  }
+  return normalizePackagePath(entrypoint);
 }
 
 export async function validateManifest(
@@ -74,16 +101,9 @@ export async function validateManifest(
   }
 
   // main — must exist on disk
-  if (!manifest.main || typeof manifest.main !== 'string') {
-    errors.push('Missing required field: "main" (entry point file)');
-  } else {
-    const mainPath = join(dir, manifest.main as string);
-    if (!existsSync(mainPath)) {
-      errors.push(
-        `Entry point file not found: "${manifest.main}" (resolved to ${mainPath})`
-      );
-    }
-  }
+  const entrypoints = new Set<string>();
+  const rootMain = validateEntrypoint(dir, manifest.main, 'main', errors);
+  if (rootMain) entrypoints.add(rootMain);
 
   // category (optional)
   if (manifest.category !== undefined) {
@@ -135,6 +155,66 @@ export async function validateManifest(
           errors.push(`Each keyword must be a string, got: ${typeof kw}`);
           break;
         }
+      }
+    }
+  }
+
+  const hasManifestKeywords = hasNonEmptyStringArray(manifest.keywords);
+  const hasManifestPrefix = typeof manifest.prefix === 'string' && manifest.prefix.length > 0;
+  const hasCommands = Array.isArray(manifest.commands) && manifest.commands.length > 0;
+
+  if (!hasManifestKeywords && !hasManifestPrefix && !hasCommands) {
+    errors.push('Manifest must declare "keywords", "prefix", or at least one command in "commands"');
+  }
+
+  // commands (optional)
+  if (manifest.commands !== undefined) {
+    if (!Array.isArray(manifest.commands) || manifest.commands.length === 0) {
+      errors.push('"commands" must be a non-empty array when provided');
+    } else {
+      const seenCommandNames = new Set<string>();
+      manifest.commands.forEach((command, index) => {
+        const label = `commands[${index}]`;
+        if (!command || typeof command !== 'object' || Array.isArray(command)) {
+          errors.push(`"${label}" must be an object`);
+          return;
+        }
+
+        const cmd = command as Record<string, unknown>;
+        if (!cmd.name || typeof cmd.name !== 'string') {
+          errors.push(`"${label}.name" is required and must be a string`);
+        } else if (seenCommandNames.has(cmd.name)) {
+          errors.push(`Duplicate command name: "${cmd.name}"`);
+        } else {
+          seenCommandNames.add(cmd.name);
+        }
+
+        if (!cmd.title || typeof cmd.title !== 'string') {
+          errors.push(`"${label}.title" is required and must be a string`);
+        }
+
+        if (cmd.main !== undefined) {
+          const commandMain = validateEntrypoint(dir, cmd.main, `${label}.main`, errors);
+          if (commandMain) entrypoints.add(commandMain);
+        }
+
+        const commandHasTrigger =
+          (typeof cmd.prefix === 'string' && cmd.prefix.length > 0) ||
+          hasNonEmptyStringArray(cmd.keywords) ||
+          hasManifestKeywords;
+
+        if (!commandHasTrigger) {
+          errors.push(`"${label}" must declare "prefix" or "keywords", or inherit manifest "keywords"`);
+        }
+      });
+    }
+  }
+
+  if (manifest.files !== undefined && entrypoints.size > 0) {
+    const packaged = new Set(preparePackageFiles(dir, manifest).files);
+    for (const entrypoint of entrypoints) {
+      if (!packaged.has(entrypoint)) {
+        errors.push(`Entry point "${entrypoint}" must be included by "files"`);
       }
     }
   }

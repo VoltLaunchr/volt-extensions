@@ -97,7 +97,7 @@ Both plugins satisfy Volt's requirements:
 
 ### GitHub Plugin
 ```
-plugins/github/
+extensions/github/
 ├── manifest.json       # Metadata
 ├── package.json        # npm dependencies
 ├── tsconfig.json       # TypeScript config
@@ -112,7 +112,7 @@ plugins/github/
 
 ### Notion Plugin
 ```
-plugins/notion/
+extensions/notion/
 ├── manifest.json       # Metadata
 ├── package.json        # npm dependencies
 ├── tsconfig.json       # TypeScript config
@@ -131,10 +131,10 @@ Both plugins are compiled to ES2020 + ESNext modules:
 
 ```bash
 # GitHub
-cd plugins/github && npm run build
+cd extensions/github && npm run build
 
 # Notion
-cd plugins/notion && npm run build
+cd extensions/notion && npm run build
 ```
 
 Output: JavaScript files in `dist/` ready for Web Worker execution.
