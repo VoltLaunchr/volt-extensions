@@ -1,11 +1,7 @@
 // Plugin system types
 
 export type ActionHandler =
-  | 'openUrl'
-  | 'copyToClipboard'
-  | 'openFile'
-  | 'runCommand'
-  | 'custom';
+  "openUrl" | "copyToClipboard" | "openFile" | "runCommand" | "custom";
 
 export interface PluginResultAction {
   id: string;
@@ -17,25 +13,25 @@ export interface PluginResultAction {
 }
 
 export enum PluginResultType {
-  Calculator = 'calculator',
-  WebSearch = 'websearch',
-  SystemCommand = 'systemcommand',
-  FileExplorer = 'fileexplorer',
-  Timer = 'timer',
-  SystemMonitor = 'systemmonitor',
-  Steam = 'steam',
-  Game = 'game',
-  Clipboard = 'clipboard',
-  Emoji = 'emoji',
-  Info = 'info',
-  Password = 'password',
-  ShellCommand = 'shellcommand',
-  GridItem = 'grid',
-  AiChat = 'aichat',
+  Calculator = "calculator",
+  WebSearch = "websearch",
+  SystemCommand = "systemcommand",
+  FileExplorer = "fileexplorer",
+  Timer = "timer",
+  SystemMonitor = "systemmonitor",
+  Steam = "steam",
+  Game = "game",
+  Clipboard = "clipboard",
+  Emoji = "emoji",
+  Info = "info",
+  Password = "password",
+  ShellCommand = "shellcommand",
+  GridItem = "grid",
+  AiChat = "aichat",
 }
 
-export type PluginActivationMode = 'declarative' | 'always' | 'custom';
-export type ActivationKind = 'prefix' | 'keyword' | 'always' | 'none';
+export type PluginActivationMode = "declarative" | "always" | "custom";
+export type ActivationKind = "prefix" | "keyword" | "always" | "none";
 
 export interface PluginActivation {
   prefixes?: string[];
@@ -71,7 +67,7 @@ export interface PluginResult {
   actions?: PluginResultAction[];
   accessories?: PluginResultAccessory[];
   section?: string;
-  layout?: 'grid';
+  layout?: "grid";
   matchKind?: ActivationKind;
 }
 
@@ -98,7 +94,9 @@ export interface Plugin {
    * Generate results for the query
    * @returns array of plugin results or null if no matches
    */
-  match(context: PluginContext): Promise<PluginResult[]> | PluginResult[] | null;
+  match(
+    context: PluginContext,
+  ): Promise<PluginResult[]> | PluginResult[] | null;
 
   /**
    * Execute the action for a plugin result
@@ -119,14 +117,14 @@ export interface IPluginRegistry {
 // ── Extension manifest types ─────────────────────────────────────────────────
 
 export type ExtensionPreferenceType =
-  | 'text'
-  | 'secret'
-  | 'number'
-  | 'boolean'
-  | 'select'
-  | 'file'
-  | 'directory'
-  | 'oauth';
+  | "text"
+  | "secret"
+  | "number"
+  | "boolean"
+  | "select"
+  | "file"
+  | "directory"
+  | "oauth";
 
 export interface ExtensionPreference {
   name: string;
@@ -157,24 +155,24 @@ export interface ExtensionCommand {
 }
 
 export type ExtensionCategory =
-  | 'productivity'
-  | 'utilities'
-  | 'developer'
-  | 'media'
-  | 'social'
-  | 'finance'
-  | 'games'
-  | 'system'
-  | 'other';
+  | "productivity"
+  | "utilities"
+  | "developer"
+  | "media"
+  | "social"
+  | "finance"
+  | "games"
+  | "system"
+  | "other";
 
 export const EXTENSION_PERMISSIONS = [
-  'clipboard',
-  'network',
-  'notifications',
-  'openUrl',
-  'oauth',
-  'ai',
-  'system',
+  "clipboard",
+  "network",
+  "notifications",
+  "openUrl",
+  "oauth",
+  "ai",
+  "system",
 ] as const;
 
 export type ExtensionPermission = (typeof EXTENSION_PERMISSIONS)[number];
@@ -198,7 +196,7 @@ export interface ExtensionManifest {
   license?: string;
   minVoltVersion?: string;
   permissions?: ExtensionPermission[];
-  main?: string;
+  main: string;
   preferences?: ExtensionPreference[];
   commands?: ExtensionCommand[];
   backgroundRefresh?: ExtensionBackgroundRefresh;
@@ -231,32 +229,33 @@ export interface VoltOAuthAPI {
   revokeToken(provider: string): Promise<void>;
 }
 
-export type VoltAICreativity = 'none' | 'low' | 'medium' | 'high' | 'maximum' | number;
-export type VoltAIProvider = 'openai' | 'anthropic' | 'groq' | 'huggingface';
+export type VoltAICreativity =
+  "none" | "low" | "medium" | "high" | "maximum" | number;
+export type VoltAIProvider = "openai" | "anthropic" | "groq" | "huggingface";
 
 export type VoltAIModel =
-  | 'openai:gpt-4o'
-  | 'openai:gpt-4o-mini'
-  | 'openai:gpt-4-turbo'
-  | 'openai:o1'
-  | 'openai:o1-mini'
-  | 'openai:o3-mini'
-  | 'anthropic:claude-opus-4-8'
-  | 'anthropic:claude-sonnet-4-6'
-  | 'anthropic:claude-haiku-4-5-20251001'
-  | 'groq:llama-3.3-70b-versatile'
-  | 'groq:llama-3.1-8b-instant'
-  | 'groq:llama-3.1-70b-versatile'
-  | 'groq:mixtral-8x7b-32768'
-  | 'huggingface:openai/gpt-oss-20b'
+  | "openai:gpt-4o"
+  | "openai:gpt-4o-mini"
+  | "openai:gpt-4-turbo"
+  | "openai:o1"
+  | "openai:o1-mini"
+  | "openai:o3-mini"
+  | "anthropic:claude-opus-4-8"
+  | "anthropic:claude-sonnet-4-6"
+  | "anthropic:claude-haiku-4-5-20251001"
+  | "groq:llama-3.3-70b-versatile"
+  | "groq:llama-3.1-8b-instant"
+  | "groq:llama-3.1-70b-versatile"
+  | "groq:mixtral-8x7b-32768"
+  | "huggingface:openai/gpt-oss-20b"
   | (string & Record<never, never>);
 
 export type VoltAIChatContentPart =
-  | { type: 'text'; text: string }
-  | { type: 'image'; mediaType: string; data: string };
+  | { type: "text"; text: string }
+  | { type: "image"; mediaType: string; data: string };
 
 export interface VoltAIChatTurn {
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: VoltAIChatContentPart[];
 }
 
@@ -279,7 +278,11 @@ export interface VoltAIAskOptions {
 }
 
 export interface VoltAIAPI {
-  ask(prompt: string, options: VoltAIAskOptions, onChunk?: (chunk: string) => void): Promise<string>;
+  ask(
+    prompt: string,
+    options: VoltAIAskOptions,
+    onChunk?: (chunk: string) => void,
+  ): Promise<string>;
 }
 
 export interface VoltSecretsAPI {
@@ -306,7 +309,7 @@ export interface ToastOptions {
   message: string;
   title?: string;
   subtitle?: string;
-  style?: 'info' | 'success' | 'error';
+  style?: "info" | "success" | "error";
   duration?: number;
 }
 
@@ -337,9 +340,9 @@ export interface VoltAPIInterface {
   captureException(
     error: Error | string,
     context?: Record<string, unknown>,
-    severity?: 'error' | 'warning'
+    severity?: "error" | "warning",
   ): void;
-  notify(message: string, type?: 'info' | 'success' | 'error'): void;
+  notify(message: string, type?: "info" | "success" | "error"): void;
   showToast(opts: ToastOptions): void;
   showHUD(message: string): void;
   confirm(message: string): Promise<boolean>;

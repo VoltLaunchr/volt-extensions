@@ -42,15 +42,15 @@ Bad:
 
 Declare only the permissions that the extension actually uses.
 
-| Permission | Required when |
-|------------|---------------|
-| `clipboard` | Reading or writing clipboard content |
-| `network` | Calling external HTTP APIs |
-| `notifications` | Showing system notifications |
-| `openUrl` | Opening URLs in the default browser |
-| `oauth` | Starting OAuth or reading extension OAuth tokens |
-| `ai` | Calling Volt AI helpers |
-| `system` | Listing applications, revealing files, or moving files to Trash |
+| Permission      | Required when                                                   |
+| --------------- | --------------------------------------------------------------- |
+| `clipboard`     | Reading or writing clipboard content                            |
+| `network`       | Calling external HTTP APIs                                      |
+| `notifications` | Showing system notifications                                    |
+| `openUrl`       | Opening URLs in the default browser                             |
+| `oauth`         | Starting OAuth or reading extension OAuth tokens                |
+| `ai`            | Calling Volt AI helpers                                         |
+| `system`        | Listing applications, revealing files, or moving files to Trash |
 
 Good:
 

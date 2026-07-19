@@ -65,13 +65,13 @@ with Volt's actual runtime and backend permission model.
   - Do not silently skip JSON schema validation in packaged CLI installs.
 - [ ] Harden package contents.
   - [x] Reject `.env`, private keys, credential files, and archives inside
-    archives.
+        archives.
   - [ ] Reject or explicitly allow large binaries and build artifacts not listed
-    in `files`.
+        in `files`.
   - [ ] Emit a machine-readable package manifest listing every included file.
 - [ ] Add package checksums to registry entries.
   - [x] Store SHA-256 in generated registry entries when `volt-plugin publish`
-    packages the archive.
+        packages the archive.
   - [ ] Verify checksum in CI when the asset is available.
 - [x] Make `publish` less manual.
   - Keep human review, but produce a machine-readable registry patch and
@@ -106,14 +106,14 @@ Status: in progress.
 - [x] Add TypeScript API types for current `VoltAPI` surfaces.
 - [x] Document backend-gated runtime APIs.
 - [ ] Confirm whether `schemas/manifest.schema.json` should be tracked as a
-  first-class source file if it was previously untracked locally.
+      first-class source file if it was previously untracked locally.
 - [ ] Decide whether category rename from `development` to `developer` is a
-  breaking store migration or only a docs/tooling correction.
+      breaking store migration or only a docs/tooling correction.
 - [ ] Add a compatibility note for older manifests that used unsupported
-  `filesystem` or `shell` permissions.
+      `filesystem` or `shell` permissions.
 - [x] Decide whether `github` source manifest should be bumped to `1.2.1` or
-  whether registry entries are allowed to point to released artifacts not
-  matching current source.
+      whether registry entries are allowed to point to released artifacts not
+      matching current source.
 
 Acceptance:
 
@@ -128,8 +128,8 @@ Acceptance:
 Package target:
 
 - separate ESLint plugin/config repository
-- package name: `@voltlaunchr/eslint-plugin`
-- config package, if useful: `@voltlaunchr/eslint-config`
+- package name: `@voltlaunchrr/eslint-plugin`
+- config package, if useful: `@voltlaunchrr/eslint-config`
 
 MVP rules:
 
@@ -187,7 +187,7 @@ Rule test fixtures:
 - [ ] `moveToTrash` without `VoltAPI.confirm` warns.
 - [ ] `openUrl(context.query)` warns; validated URL passes.
 - [ ] Real fixture calibration against `extensions/github`,
-  `extensions/notion`, and `extensions/password-generator`.
+      `extensions/notion`, and `extensions/password-generator`.
 
 False-positive guardrails:
 
@@ -245,7 +245,7 @@ Acceptance:
   - run lint/build/test per changed extension
   - verify registry entry matches source manifest via registry validator
 - [ ] Verify registry entry matches the packaged manifest inside the release
-  archive.
+      archive.
 - [ ] Add package integrity:
   - [x] registry checksum for release archive in generated publish artifacts
   - [x] package dry-run manifest/file list output via `package-manifest.json`

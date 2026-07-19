@@ -33,17 +33,17 @@ volt-plugin init [name]
 
 The wizard prompts for:
 
-| Field | Description | Example |
-|-------|-------------|---------|
-| Extension ID | Unique kebab-case identifier | `my-plugin` |
-| Display name | Human-readable name | `My Plugin` |
-| Description | Short summary | `Converts currencies` |
-| Author name | Your name (defaults to git config) | `Jane Doe` |
-| GitHub username | Optional, for attribution | `janedoe` |
-| Category | Extension category | `utilities` |
-| Permissions | Required capabilities | `clipboard`, `network` |
-| Trigger prefix | Optional activation keyword | `convert` |
-| Keywords | Comma-separated search terms | `currency, money, exchange` |
+| Field           | Description                        | Example                     |
+| --------------- | ---------------------------------- | --------------------------- |
+| Extension ID    | Unique kebab-case identifier       | `my-plugin`                 |
+| Display name    | Human-readable name                | `My Plugin`                 |
+| Description     | Short summary                      | `Converts currencies`       |
+| Author name     | Your name (defaults to git config) | `Jane Doe`                  |
+| GitHub username | Optional, for attribution          | `janedoe`                   |
+| Category        | Extension category                 | `utilities`                 |
+| Permissions     | Required capabilities              | `clipboard`, `network`      |
+| Trigger prefix  | Optional activation keyword        | `convert`                   |
+| Keywords        | Comma-separated search terms       | `currency, money, exchange` |
 
 Generated files:
 
@@ -74,7 +74,7 @@ For CI or monorepo usage:
 volt-plugin lint --dir extensions/github
 ```
 
-`volt-plugin lint` delegates to the extension's local ESLint configuration. Volt-specific rules should live in the dedicated ESLint plugin/config package and be imported from `eslint.config.js`.
+`volt-plugin lint` delegates to the extension's local ESLint configuration. Volt-specific rules live in the dedicated `@voltlaunchrr/eslint-plugin` and `@voltlaunchrr/eslint-config` packages. Until those packages are published to npm, generated extensions keep the local standard flat config and must not declare an unavailable npm dependency.
 
 ### test
 
@@ -194,15 +194,15 @@ Checks performed:
 
 ### Permissions
 
-| Permission | Description |
-|-----------|-------------|
-| `clipboard` | Read/write system clipboard |
-| `network` | Make HTTP requests |
-| `notifications` | Show system notifications |
-| `openUrl` | Open links in the default browser |
-| `oauth` | Run OAuth PKCE flows and read extension OAuth tokens |
-| `ai` | Call configured AI providers through Volt |
-| `system` | List installed applications, reveal files, and move files to Trash |
+| Permission      | Description                                                        |
+| --------------- | ------------------------------------------------------------------ |
+| `clipboard`     | Read/write system clipboard                                        |
+| `network`       | Make HTTP requests                                                 |
+| `notifications` | Show system notifications                                          |
+| `openUrl`       | Open links in the default browser                                  |
+| `oauth`         | Run OAuth PKCE flows and read extension OAuth tokens               |
+| `ai`            | Call configured AI providers through Volt                          |
+| `system`        | List installed applications, reveal files, and move files to Trash |
 
 ## Development
 

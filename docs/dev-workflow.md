@@ -40,34 +40,41 @@ my-extension/
 ### 4. Create index.ts
 
 ```typescript
-import { Plugin, PluginContext, PluginResult, PluginResultType } from '@voltlaunchrr/plugin-api';
+import {
+  Plugin,
+  PluginContext,
+  PluginResult,
+  PluginResultType,
+} from "@voltlaunchrr/plugin-api";
 
 export class MyExtension implements Plugin {
-  id = 'my-extension';
-  name = 'My Extension';
-  description = 'My awesome extension';
+  id = "my-extension";
+  name = "My Extension";
+  description = "My awesome extension";
   enabled = true;
 
   canHandle(context: PluginContext): boolean {
-    return context.query.toLowerCase().startsWith('my ');
+    return context.query.toLowerCase().startsWith("my ");
   }
 
   async match(context: PluginContext): Promise<PluginResult[]> {
     const query = context.query.substring(3); // Remove "my " prefix
 
-    return [{
-      id: 'my-result',
-      type: PluginResultType.Info,
-      title: `Hello from My Extension!`,
-      subtitle: `You typed: ${query}`,
-      icon: '🔌',
-      score: 100,
-      data: { query }
-    }];
+    return [
+      {
+        id: "my-result",
+        type: PluginResultType.Info,
+        title: `Hello from My Extension!`,
+        subtitle: `You typed: ${query}`,
+        icon: "🔌",
+        score: 100,
+        data: { query },
+      },
+    ];
   }
 
   async execute(result: PluginResult): Promise<void> {
-    console.log('Extension executed:', result.data);
+    console.log("Extension executed:", result.data);
     // Your action here
   }
 }
@@ -79,16 +86,10 @@ export default MyExtension;
 
 Open Volt and use the **Link Dev Extension** command:
 
-1. Press `Ctrl+Shift+Space` to open Volt
+1. Press `Ctrl+Space` to open Volt (or use your configured hotkey)
 2. Type `settings` and go to Extensions
 3. Click "Link Dev Extension"
 4. Select your extension folder (e.g., `D:\dev\my-extension`)
-
-Or use the developer console to link programmatically:
-
-```typescript
-await extensionService.linkDevExtension('D:\\dev\\my-extension');
-```
 
 ### 6. Test Your Extension
 
@@ -99,20 +100,14 @@ await extensionService.linkDevExtension('D:\\dev\\my-extension');
 ### 7. Hot Reload
 
 When you modify your extension files:
+
 1. Save your changes
 2. Press `Ctrl+R` in Volt to refresh
 3. Or use the "Refresh Dev Extension" command
 
-## Dev Extension Commands
+## Dev Extension Controls
 
-| Command | Description |
-|---------|-------------|
-| `linkDevExtension(path)` | Link a local folder as dev extension |
-| `unlinkDevExtension(id)` | Remove a dev extension link |
-| `getDevExtensions()` | List all linked dev extensions |
-| `toggleDevExtension(id, enabled)` | Enable/disable a dev extension |
-| `refreshDevExtension(id)` | Reload extension from disk |
-| `getDevExtensionsPath()` | Get the dev-extensions config folder |
+Use **Settings → Extensions** to link, unlink, enable, disable, or refresh a development extension. These controls call internal Tauri commands; `extensionService` is not part of the public extension API.
 
 ## Dev Extension Badge
 
@@ -120,11 +115,7 @@ Dev extensions appear with a "DEV" badge in the UI to distinguish them from inst
 
 ## File Structure
 
-Dev extension state is stored in:
-```
-%APPDATA%/Volt/dev-extensions/
-└── dev-extensions.json    # List of linked extensions
-```
+Volt stores development-extension state under its Tauri application-data directory. Treat the location as an implementation detail and use the Settings UI rather than editing the state file.
 
 ## Best Practices
 
@@ -151,7 +142,8 @@ Dev extension state is stored in:
 ### manifest.json errors
 
 Common issues:
-- Missing required fields (`id`, `name`, `version`, `description`, `author`)
+
+- Missing required fields (`id`, `name`, `version`, `description`, `author`, `main`)
 - Invalid JSON syntax
 - Wrong `main` entry point path
 
@@ -164,15 +156,14 @@ cd my-volt-extension
 
 # 2. Create manifest.json and index.ts (see above)
 
-# 3. Link to Volt (in Volt console or UI)
-# extensionService.linkDevExtension('D:\\dev\\my-volt-extension')
+# 3. Link to Volt from Settings → Extensions
 
 # 4. Test in Volt
 # Type your trigger, see results
 
 # 5. Make changes, save, refresh
 
-# 6. When ready to publish, create a zip and submit to the store
+# 6. When ready, run volt-plugin publish and submit the source PR
 ```
 
 ## Publishing Your Extension
@@ -188,8 +179,8 @@ When your extension is ready:
 
 ## Reference Examples
 
-| Example | Complexity | Description |
-|---------|-----------|-------------|
-| [Web Search](../examples/websearch/) | Simple | Single-file, prefix-based triggers |
-| [Calculator](../examples/calculator/) | Complex | Multi-handler, parser pattern, React component |
-| [Password Generator](../extensions/password-generator/) | Medium | Crypto-secure generation, multiple modes |
+| Example                                                 | Complexity | Description                                    |
+| ------------------------------------------------------- | ---------- | ---------------------------------------------- |
+| [Web Search](../examples/websearch/)                    | Simple     | Single-file, prefix-based triggers             |
+| [Calculator](../examples/calculator/)                   | Complex    | Multi-handler, parser pattern, React component |
+| [Password Generator](../extensions/password-generator/) | Medium     | Crypto-secure generation, multiple modes       |

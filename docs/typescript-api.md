@@ -74,12 +74,12 @@ import {
   PluginContext,
   PluginResult,
   PluginResultType,
-} from '@voltlaunchrr/plugin-api';
+} from "@voltlaunchrr/plugin-api";
 
 export class MyPlugin implements Plugin {
-  id = 'my-plugin';
-  name = 'My Plugin';
-  description = 'Does something useful';
+  id = "my-plugin";
+  name = "My Plugin";
+  description = "Does something useful";
   enabled = true;
 
   canHandle(context: PluginContext): boolean {
@@ -89,9 +89,9 @@ export class MyPlugin implements Plugin {
   async match(context: PluginContext): Promise<PluginResult[]> {
     return [
       {
-        id: 'result-1',
+        id: "result-1",
         type: PluginResultType.Info,
-        title: 'My Result',
+        title: "My Result",
         subtitle: context.query,
         score: 100,
       },
@@ -99,7 +99,7 @@ export class MyPlugin implements Plugin {
   }
 
   async execute(result: PluginResult): Promise<void> {
-    console.log('Executed:', result.title);
+    console.log("Executed:", result.title);
   }
 }
 
@@ -164,10 +164,12 @@ async execute(result: PluginResult): Promise<void> {
 Plugins can export React components for custom UI rendering (see the [Calculator example](../examples/calculator/) for a real implementation):
 
 ```tsx
-import React from 'react';
+import React from "react";
 
 // Export a named view component alongside your plugin
-export const MyPluginView: React.FC<{ result: PluginResult }> = ({ result }) => {
+export const MyPluginView: React.FC<{ result: PluginResult }> = ({
+  result,
+}) => {
   return (
     <div className="my-plugin-view">
       <h3>{result.title}</h3>
@@ -192,14 +194,14 @@ async execute(result: PluginResult): Promise<void> {
 
 Runtime APIs with backend permission gates:
 
-| API | Permission |
-|-----|------------|
-| `VoltAPI.storage.*` | Enabled extension only |
-| `VoltAPI.secrets.*` | Enabled extension only |
-| `VoltAPI.oauth.*` | `oauth` |
-| `VoltAPI.ai.ask()` | `ai` |
-| `VoltAPI.system.*` | `system` |
-| `VoltAPI.fetch()` and authenticated service fetches | `network` |
+| API                                                 | Permission             |
+| --------------------------------------------------- | ---------------------- |
+| `VoltAPI.storage.*`                                 | Enabled extension only |
+| `VoltAPI.secrets.*`                                 | Enabled extension only |
+| `VoltAPI.oauth.*`                                   | `oauth`                |
+| `VoltAPI.ai.ask()`                                  | `ai`                   |
+| `VoltAPI.system.*`                                  | `system`               |
+| `VoltAPI.fetch()` and authenticated service fetches | `network`              |
 
 ### Parser Pattern
 
@@ -221,6 +223,7 @@ match(context: PluginContext): PluginResult[] | null {
 ## Recommended Project Structure
 
 Simple plugin (single file):
+
 ```
 my-plugin/
 ├── manifest.json
@@ -229,6 +232,7 @@ my-plugin/
 ```
 
 Complex plugin (multi-file):
+
 ```
 my-plugin/
 ├── manifest.json
@@ -246,27 +250,27 @@ my-plugin/
 ## Testing
 
 ```typescript
-import { MyPlugin } from './index';
+import { MyPlugin } from "./index";
 
-describe('MyPlugin', () => {
+describe("MyPlugin", () => {
   const plugin = new MyPlugin();
 
-  it('should handle matching queries', () => {
-    expect(plugin.canHandle({ query: 'test' })).toBe(true);
+  it("should handle matching queries", () => {
+    expect(plugin.canHandle({ query: "test" })).toBe(true);
   });
 
-  it('should not handle empty queries', () => {
-    expect(plugin.canHandle({ query: '' })).toBe(false);
+  it("should not handle empty queries", () => {
+    expect(plugin.canHandle({ query: "" })).toBe(false);
   });
 
-  it('should return results', async () => {
-    const results = await plugin.match({ query: 'test' });
+  it("should return results", async () => {
+    const results = await plugin.match({ query: "test" });
     expect(results).not.toBeNull();
     expect(results!.length).toBeGreaterThan(0);
   });
 
-  it('should have valid result structure', async () => {
-    const results = await plugin.match({ query: 'test' });
+  it("should have valid result structure", async () => {
+    const results = await plugin.match({ query: "test" });
     const result = results![0];
     expect(result.id).toBeDefined();
     expect(result.type).toBeDefined();

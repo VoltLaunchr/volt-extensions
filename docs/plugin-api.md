@@ -27,7 +27,7 @@ interface Plugin {
 
   // Generate results for the query
   match(
-    context: PluginContext
+    context: PluginContext,
   ): Promise<PluginResult[]> | PluginResult[] | null;
 
   // Execute when user selects a result
@@ -90,21 +90,21 @@ Available result types for categorizing plugin output:
 
 ```typescript
 enum PluginResultType {
-  Calculator = 'calculator',
-  WebSearch = 'websearch',
-  SystemCommand = 'systemcommand',
-  FileExplorer = 'fileexplorer',
-  Timer = 'timer',
-  SystemMonitor = 'systemmonitor',
-  Steam = 'steam',
-  Game = 'game',
-  Clipboard = 'clipboard',
-  Emoji = 'emoji',
-  Info = 'info',
-  Password = 'password',
-  ShellCommand = 'shellcommand',
-  GridItem = 'grid',
-  AiChat = 'aichat',
+  Calculator = "calculator",
+  WebSearch = "websearch",
+  SystemCommand = "systemcommand",
+  FileExplorer = "fileexplorer",
+  Timer = "timer",
+  SystemMonitor = "systemmonitor",
+  Steam = "steam",
+  Game = "game",
+  Clipboard = "clipboard",
+  Emoji = "emoji",
+  Info = "info",
+  Password = "password",
+  ShellCommand = "shellcommand",
+  GridItem = "grid",
+  AiChat = "aichat",
 }
 ```
 
@@ -125,6 +125,7 @@ interface PluginRegistry {
 ```
 
 Key behavior:
+
 - `query()` calls all enabled plugins **in parallel** with a **500ms timeout** per plugin
 - Failed plugins are caught silently (one plugin crash won't break others)
 - Results are merged, tagged with `pluginId`, and sorted by `score` descending
@@ -161,25 +162,25 @@ Every extension requires a `manifest.json`:
 }
 ```
 
-| Field | Required | Description |
-|-------|----------|-------------|
-| `id` | Yes | Unique identifier (lowercase, no spaces, use hyphens) |
-| `name` | Yes | Display name |
-| `version` | Yes | Semantic version (e.g., `1.0.0`) |
-| `description` | Yes | Short description |
-| `author` | Yes | Object with `name` and `github` fields |
-| `main` | Yes | Entry point file (TypeScript or JavaScript) |
-| `icon` | No | Path to icon file |
-| `category` | No | Category for the extension store |
-| `keywords` | No | Search tags |
-| `minVoltVersion` | No | Minimum Volt version required |
-| `permissions` | No | Required permissions (e.g., `clipboard`) |
-| `files` | No | Files to include in the packaged extension |
-| `commands` | No | Named sub-commands, each with `name`, `title`, optional `main`, and its own `prefix` or `keywords` |
-| `backgroundRefresh` | No | Optional cache refresh interval such as `30s`, `5m`, or `1h` |
-| `repository` | No | URL to the extension's source repository |
-| `homepage` | No | URL to the extension's homepage or documentation |
-| `license` | No | License identifier (e.g., `MIT`) |
+| Field               | Required | Description                                                                                        |
+| ------------------- | -------- | -------------------------------------------------------------------------------------------------- |
+| `id`                | Yes      | Unique identifier (lowercase, no spaces, use hyphens)                                              |
+| `name`              | Yes      | Display name                                                                                       |
+| `version`           | Yes      | Semantic version (e.g., `1.0.0`)                                                                   |
+| `description`       | Yes      | Short description                                                                                  |
+| `author`            | Yes      | Object with `name` and `github` fields                                                             |
+| `main`              | Yes      | Entry point file (TypeScript or JavaScript)                                                        |
+| `icon`              | No       | Path to icon file                                                                                  |
+| `category`          | No       | Category for the extension store                                                                   |
+| `keywords`          | No       | Search tags                                                                                        |
+| `minVoltVersion`    | No       | Minimum Volt version required                                                                      |
+| `permissions`       | No       | Required permissions (e.g., `clipboard`)                                                           |
+| `files`             | No       | Files to include in the packaged extension                                                         |
+| `commands`          | No       | Named sub-commands, each with `name`, `title`, optional `main`, and its own `prefix` or `keywords` |
+| `backgroundRefresh` | No       | Optional cache refresh interval such as `30s`, `5m`, or `1h`                                       |
+| `repository`        | No       | URL to the extension's source repository                                                           |
+| `homepage`          | No       | URL to the extension's homepage or documentation                                                   |
+| `license`           | No       | License identifier (e.g., `MIT`)                                                                   |
 
 Supported permissions: `clipboard`, `network`, `notifications`, `openUrl`, `oauth`, `ai`, `system`.
 Volt validates these permissions at install/consent time and the runtime backend re-checks them for sensitive `ext_*` commands.
@@ -195,12 +196,12 @@ Volt validates these permissions at install/consent time and the runtime backend
 
 ### Scoring
 
-| Score Range | Usage | Example |
-|-------------|-------|---------|
-| 90-100 | Exact or high-confidence matches | Calculator: `2+2` returns `4` |
-| 70-89 | Strong matches | Web search with explicit trigger |
-| 50-69 | Partial matches | Fuzzy keyword match |
-| < 50 | Weak / fallback matches | Generic suggestions |
+| Score Range | Usage                            | Example                          |
+| ----------- | -------------------------------- | -------------------------------- |
+| 90-100      | Exact or high-confidence matches | Calculator: `2+2` returns `4`    |
+| 70-89       | Strong matches                   | Web search with explicit trigger |
+| 50-69       | Partial matches                  | Fuzzy keyword match              |
+| < 50        | Weak / fallback matches          | Generic suggestions              |
 
 ### Error Handling
 

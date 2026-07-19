@@ -84,7 +84,7 @@ export class MyPlugin implements Plugin {
 
 ### 4. Link Your Plugin to Volt (Dev Mode)
 
-1. Open Volt (`Ctrl+Shift+Space`)
+1. Open Volt (`Ctrl+Space` by default)
 2. Go to **Settings** > **Extensions**
 3. Click **"Link Dev Extension"**
 4. Select your plugin folder (e.g., `D:\dev\my-first-plugin`)

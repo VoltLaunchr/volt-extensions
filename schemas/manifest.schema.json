@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://voltlauncher.com/schemas/manifest.json",
+  "$id": "https://raw.githubusercontent.com/VoltLaunchr/volt-extensions/main/schemas/manifest.schema.json",
   "title": "Volt Extension Manifest",
   "description": "Schema for Volt extension manifest.json files",
   "type": "object",
@@ -81,7 +81,15 @@
       "type": "array",
       "items": {
         "type": "string",
-        "enum": ["clipboard", "network", "notifications", "openUrl", "oauth", "ai", "system"]
+        "enum": [
+          "clipboard",
+          "network",
+          "notifications",
+          "openUrl",
+          "oauth",
+          "ai",
+          "system"
+        ]
       },
       "uniqueItems": true,
       "description": "Permissions the user must grant before the extension loads"
@@ -137,7 +145,16 @@
         },
         "type": {
           "type": "string",
-          "enum": ["text", "secret", "number", "boolean", "select", "file", "directory", "oauth"],
+          "enum": [
+            "text",
+            "secret",
+            "number",
+            "boolean",
+            "select",
+            "file",
+            "directory",
+            "oauth"
+          ],
           "description": "Field type — 'secret' values are stored in the OS keyring"
         },
         "title": { "type": "string", "minLength": 1 },
@@ -154,10 +171,24 @@
         },
         "min": { "type": "number", "description": "Only for type 'number'" },
         "max": { "type": "number", "description": "Only for type 'number'" },
-        "oauthProvider": { "type": "string", "description": "Only for type 'oauth'" },
-        "oauthAuthUrl": { "type": "string", "format": "uri", "description": "Only for type 'oauth'" },
-        "oauthTokenUrl": { "type": "string", "format": "uri", "description": "Only for type 'oauth'" },
-        "oauthClientId": { "type": "string", "description": "Only for type 'oauth'" },
+        "oauthProvider": {
+          "type": "string",
+          "description": "Only for type 'oauth'"
+        },
+        "oauthAuthUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "Only for type 'oauth'"
+        },
+        "oauthTokenUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "Only for type 'oauth'"
+        },
+        "oauthClientId": {
+          "type": "string",
+          "description": "Only for type 'oauth'"
+        },
         "oauthScopes": {
           "type": "array",
           "items": { "type": "string" },

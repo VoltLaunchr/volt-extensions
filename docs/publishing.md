@@ -20,7 +20,7 @@ git clone https://github.com/YOUR_USERNAME/volt-extensions.git
 ### 2. Add your plugin
 
 ```bash
-cd volt-extensions/community
+cd volt-extensions/extensions
 mkdir your-plugin-name
 cd your-plugin-name
 # Add your plugin files

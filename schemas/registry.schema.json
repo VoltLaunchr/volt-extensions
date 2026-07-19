@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://voltlauncher.com/schemas/registry.json",
+  "$id": "https://raw.githubusercontent.com/VoltLaunchr/volt-extensions/main/schemas/registry.schema.json",
   "title": "Volt Extension Registry",
   "description": "Schema for the public Volt extension registry.json file",
   "type": "object",
@@ -53,10 +53,7 @@
           "items": { "type": "string", "format": "uri" }
         },
         "readmeUrl": {
-          "anyOf": [
-            { "type": "string", "format": "uri" },
-            { "type": "null" }
-          ]
+          "anyOf": [{ "type": "string", "format": "uri" }, { "type": "null" }]
         },
         "sha256": {
           "type": "string",

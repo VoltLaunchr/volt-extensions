@@ -57,6 +57,7 @@ let app_dir = api.get_app_data_dir()?;         // -> PathBuf
 ```
 
 Plugin IDs are validated to prevent path traversal attacks:
+
 - Max 64 characters
 - Only ASCII alphanumerics, hyphens, and underscores
 - No path separators (`.`, `..`, `/`, `\`)
@@ -89,16 +90,16 @@ registry.shutdown_all().await?;
 
 ## When to Use Rust
 
-| Use Case | Recommended API |
-|----------|----------------|
-| UI interactions, search results | TypeScript |
-| Web API calls | TypeScript |
-| Clipboard, URL opening | TypeScript (via VoltAPI runtime) |
-| System metrics (CPU, RAM, disk) | Rust |
-| Native OS integrations (registry, processes) | Rust |
-| File system watching | Rust |
-| CPU-intensive computation | Rust |
-| Hardware access | Rust |
+| Use Case                                     | Recommended API                  |
+| -------------------------------------------- | -------------------------------- |
+| UI interactions, search results              | TypeScript                       |
+| Web API calls                                | TypeScript                       |
+| Clipboard, URL opening                       | TypeScript (via VoltAPI runtime) |
+| System metrics (CPU, RAM, disk)              | Rust                             |
+| Native OS integrations (registry, processes) | Rust                             |
+| File system watching                         | Rust                             |
+| CPU-intensive computation                    | Rust                             |
+| Hardware access                              | Rust                             |
 
 ## See Also
 
